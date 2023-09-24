@@ -1,14 +1,16 @@
 
 local ava = {}
 
-function ava.avatar_cria (_imagem, pxi, pyi,teclas,consts)
+function ava.avatar_cria (imagens, pxi, pyi,teclas,consts)
   local avatar = {}
-  local imagem = _imagem
+  local imagem = imagens.front[1]
   local velocidade = 1
   local x,y = pxi-1/2,pyi-1/2
   local M = consts.M
   local raio_bomba = 2
-  
+  local iImg = 1
+  local tempoImg = 0
+  local tempoIntervalo = 1/24
   M:break_wall(math.ceil(x),math.ceil(y),1)
   
   function avatar.update(dt)
@@ -17,7 +19,15 @@ function ava.avatar_cria (_imagem, pxi, pyi,teclas,consts)
     local ny = consts.ny
     local r = consts.r
     local dr = (velocidade+1)*dt*1.2
+    
+    local movFront = false
+    local movBack = false
+    local movLeft = false
+    local movRight = false
+    
+
     if love.keyboard.isDown(teclas.right) then
+      movRight = true
       y1=y1
       x1=x1+dr
       local i1=math.ceil(y1)
@@ -28,69 +38,109 @@ function ava.avatar_cria (_imagem, pxi, pyi,teclas,consts)
     end
   
     if love.keyboard.isDown(teclas.left) then
-        y1=y1
-        x1=x1-dr
-        local i1=math.ceil(y1)
-        local j1=math.ceil(x1)
-        if (j1==1 or M[i1][j1-1]~=0) and x1-r<j1-1 then
-          x1=j1-1+r
-        end
+      movLeft = true
+      y1=y1
+      x1=x1-dr
+      local i1=math.ceil(y1)
+      local j1=math.ceil(x1)
+      if (j1==1 or M[i1][j1-1]~=0) and x1-r<j1-1 then
+        x1=j1-1+r
+      end
     end
   
     if love.keyboard.isDown(teclas.up) then
-        y1=y1-dr
-        x1=x1
-        local i1=math.ceil(y1)
-        local j1=math.ceil(x1)
-        if (i1==1 or M[i1-1][j1]~=0) and y1-r<i1-1 then
-          y1=i1-1+r
-        end
-      end
-      
-      if love.keyboard.isDown(teclas.down) then
-        y1=y1+dr
-        x1=x1
-        local i1=math.ceil(y1)
-        local j1=math.ceil(x1)
-        if (i1==ny or M[i1+1][j1]~=0) and y1+r>i1 then
-          y1=i1-r
-        end
-      end
-      
+      movBack = true
+      y1=y1-dr
+      x1=x1
       local i1=math.ceil(y1)
       local j1=math.ceil(x1)
-      if j1==nx or i1-1==0 or M[i1-1][j1+1]~=0 then
-        local dx1,dy1=x1-j1,y1-(i1-1)
-        local d=math.sqrt(dx1^2+dy1^2)
-        if d<r then
-          x1=x1+(r-d)*dx1/d
-          y1=y1+(r-d)*dy1/d
-        end
+      if (i1==1 or M[i1-1][j1]~=0) and y1-r<i1-1 then
+        y1=i1-1+r
       end
-      if j1==nx or i1==ny or M[i1+1][j1+1]~=0 then
-        local dx1,dy1=x1-j1,y1-i1
-        local d=math.sqrt(dx1^2+dy1^2)
-        if d<r then
-          x1=x1+(r-d)*dx1/d
-          y1=y1+(r-d)*dy1/d
-        end
+    end
+    
+    if love.keyboard.isDown(teclas.down) then
+      movFront = true
+      y1=y1+dr
+      x1=x1
+      local i1=math.ceil(y1)
+      local j1=math.ceil(x1)
+      if (i1==ny or M[i1+1][j1]~=0) and y1+r>i1 then
+        y1=i1-r
       end
-      if j1-1==0 or i1-1==0 or M[i1-1][j1-1]~=0 then
-        local dx1,dy1=x1-(j1-1),y1-(i1-1)
-        local d=math.sqrt(dx1^2+dy1^2)
-        if d<r then
-          x1=x1+(r-d)*dx1/d
-          y1=y1+(r-d)*dy1/d
-        end
+    end
+    
+    local i1=math.ceil(y1)
+    local j1=math.ceil(x1)
+    if j1==nx or i1-1==0 or M[i1-1][j1+1]~=0 then
+      local dx1,dy1=x1-j1,y1-(i1-1)
+      local d=math.sqrt(dx1^2+dy1^2)
+      if d<r then
+        x1=x1+(r-d)*dx1/d
+        y1=y1+(r-d)*dy1/d
       end
-      if j1-1==0 or i1==ny or M[i1+1][j1-1]~=0 then
-        local dx1,dy1=x1-(j1-1),y1-i1
-        local d=math.sqrt(dx1^2+dy1^2)
-        if d<r then
-          x1=x1+(r-d)*dx1/d
-          y1=y1+(r-d)*dy1/d
-        end
+    end
+    if j1==nx or i1==ny or M[i1+1][j1+1]~=0 then
+      local dx1,dy1=x1-j1,y1-i1
+      local d=math.sqrt(dx1^2+dy1^2)
+      if d<r then
+        x1=x1+(r-d)*dx1/d
+        y1=y1+(r-d)*dy1/d
       end
+    end
+    if j1-1==0 or i1-1==0 or M[i1-1][j1-1]~=0 then
+      local dx1,dy1=x1-(j1-1),y1-(i1-1)
+      local d=math.sqrt(dx1^2+dy1^2)
+      if d<r then
+        x1=x1+(r-d)*dx1/d
+        y1=y1+(r-d)*dy1/d
+      end
+    end
+    if j1-1==0 or i1==ny or M[i1+1][j1-1]~=0 then
+      local dx1,dy1=x1-(j1-1),y1-i1
+      local d=math.sqrt(dx1^2+dy1^2)
+      if d<r then
+        x1=x1+(r-d)*dx1/d
+        y1=y1+(r-d)*dy1/d
+      end
+    end
+    
+    tempoImg = tempoImg + dt
+    
+    if tempoImg > tempoIntervalo then
+      tempoImg = tempoImg - tempoIntervalo
+      
+      if movFront then
+        imagem = imagens.front[iImg]
+        iImg = iImg + 1
+        if iImg > #imagens.front then
+          iImg = 1
+        end
+      elseif movBack then
+        imagem = imagens.back[iImg]
+        iImg = iImg + 1
+        if iImg > #imagens.back then
+          iImg = 1
+        end
+      elseif movRight then
+        imagem = imagens.right[iImg]
+        iImg = iImg + 1
+        if iImg > #imagens.right then
+          iImg = 1
+        end
+      elseif movLeft then
+        imagem = imagens.left[iImg]
+        iImg = iImg + 1
+        if iImg > #imagens.left then
+          iImg = 1
+        end
+      else
+        iImg = 1
+        imagem = imagens.front[iImg]
+      end
+      
+    end
+    
     x,y = x1,y1
     
   end
