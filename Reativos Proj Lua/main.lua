@@ -12,11 +12,13 @@ local tempoAcumulado = 0
 local consts
 
 
+
 function love.load()
   love.window.setMode(D,D,{resizable = true})
-  area1,area2,area3=love.graphics.newImage("imagens/grass.jpg"),love.graphics.newImage("imagens/sponge.jpg"),love.graphics.newImage("imagens/fire.jpg")
-  avatar1,avatar2,avatar3=love.graphics.newImage("imagens/cat.png"),love.graphics.newImage("imagens/dog.png"),love.graphics.newImage("imagens/raccoon.png")
+  area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
   nx,ny=11,11
+  bomb=love.graphics.newImage("imagens/bomba/Bomb_f01.png")
+
   
   pathAvatarAfront = "imagens/avatarA/front/"
   pathAvatarAback = "imagens/avatarA/back/"
@@ -77,7 +79,7 @@ function love.load()
     M=map.create(nx,ny,false,0.0)
     wall=area1
   end
-  local imagens = {area1,area2,area3}
+  local imagens = {area1,area2,bomb,area3}
   walls = {}
   for i, imagem in ipairs(imagens) do
     local wall

@@ -111,34 +111,34 @@ function ava.avatar_cria (imagens, pxi, pyi,teclas,consts)
       tempoImg = tempoImg - tempoIntervalo
       
       if movFront then
-        imagem = imagens.front[iImg]
         iImg = iImg + 1
         if iImg > #imagens.front then
           iImg = 1
         end
+        imagem = imagens.front[iImg]
       elseif movBack then
-        imagem = imagens.back[iImg]
         iImg = iImg + 1
         if iImg > #imagens.back then
           iImg = 1
         end
+        imagem = imagens.back[iImg]
       elseif movRight then
-        imagem = imagens.right[iImg]
         iImg = iImg + 1
         if iImg > #imagens.right then
           iImg = 1
         end
+        imagem = imagens.right[iImg]
       elseif movLeft then
-        imagem = imagens.left[iImg]
         iImg = iImg + 1
         if iImg > #imagens.left then
           iImg = 1
         end
+        imagem = imagens.left[iImg]
       else
         iImg = 1
         imagem = imagens.front[iImg]
       end
-      
+
     end
     
     x,y = x1,y1
@@ -149,7 +149,8 @@ function ava.avatar_cria (imagens, pxi, pyi,teclas,consts)
     if key == teclas.A then
       local i1=math.ceil(y)
       local j1=math.ceil(x)
-      M:explosion(j1,i1,raio_bomba)
+      M[i1][j1] = 3
+      --M:explosion(j1,i1,raio_bomba)
       
     elseif key == teclas.t1 and velocidade < 3 then
       velocidade = velocidade + 0.25
