@@ -11,13 +11,24 @@ local FPS = 60
 local tempoAcumulado = 0
 local consts
 
-
+local imgBombs
+local iBomb
+local FPSBomb = 6
+local tempoBomb = 0
 
 function love.load()
   love.window.setMode(D,D,{resizable = true})
   area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
   nx,ny=11,11
-  bomb=love.graphics.newImage("imagens/bomba/Bomb_f01.png")
+  
+  pathBombs="imagens/bomba/"
+  imgNomesBombs = {"Bomb_f01.png","Bomb_f02.png","Bomb_f03.png"}
+
+  imgBombs = {}
+  for i, img in pairs(imgNomesBombs) do
+    table.insert(imgBombs,love.graphics.newImage(pathBombs..img))
+  end
+  iBomb=1
 
   
   pathAvatarAfront = "imagens/avatarA/front/"
@@ -79,7 +90,7 @@ function love.load()
     M=map.create(nx,ny,false,0.0)
     wall=area1
   end
-  local imagens = {area1,area2,bomb,area3}
+  local imagens = {area1,area2,imgBombs[iBomb],area3}
   walls = {}
   for i, imagem in ipairs(imagens) do
     local wall
@@ -114,6 +125,19 @@ function love.update(dt)
     avatarB.up()
     tempoAcumulado = tempoAcumulado - 1/FPS
   end  
+  
+  tempoBomb = tempoBomb + dt
+    
+  if tempoBomb > 1/FPSBomb then
+    tempoBomb = tempoBomb - 1/FPSBomb
+    iBomb = iBomb + 1
+    if iBomb > #imgBombs then
+      iBomb = 1
+    end
+    walls[3].image = imgBombs[iBomb]
+  end
+  
+  
 end
 
 
