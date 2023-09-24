@@ -149,8 +149,10 @@ function ava.avatar_cria (imagens, pxi, pyi,teclas,consts)
     if key == teclas.A then
       local i1=math.ceil(y)
       local j1=math.ceil(x)
-      M[i1][j1] = 3
+      
+      --M[i1][j1] = 3
       --M:explosion(j1,i1,raio_bomba)
+      M:place_bomb(j1,i1,raio_bomba)
       
     elseif key == teclas.t1 and velocidade < 3 then
       velocidade = velocidade + 0.25

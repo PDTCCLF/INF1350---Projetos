@@ -121,9 +121,11 @@ end
 function love.update(dt)
   tempoAcumulado = tempoAcumulado + dt
   if tempoAcumulado > 1/FPS then
+    tempoAcumulado = tempoAcumulado - 1/FPS
+    
     avatarA.up()
     avatarB.up()
-    tempoAcumulado = tempoAcumulado - 1/FPS
+    M:update()
   end  
   
   tempoBomb = tempoBomb + dt

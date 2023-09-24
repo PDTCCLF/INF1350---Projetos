@@ -60,13 +60,22 @@ local break_wall = function (map, xc, yc, r)
 end
 
 local explosion = function (map, xc, yc, r)
+  map[yc][xc] = 0
+  map.hidden[yc][xc] = 4
+  duracaoFogo = 120
+  map.times[yc][xc] = duracaoFogo
   for i=0,r do
     if yc+i>0 and yc+i<map.ny then
       if map[yc+i][xc] == 1 then
         break
       elseif map[yc+i][xc] ~= 0 then
-        map[yc+i][xc] = 0
+        --map[yc+i][xc] = 0
+        map.hidden[yc+i][xc] = 4
+        map.times[yc+i][xc] = duracaoFogo
         break
+      else
+        map.hidden[yc+i][xc] = 4
+        map.times[yc+i][xc] = duracaoFogo
       end
     end
   end
@@ -76,8 +85,13 @@ local explosion = function (map, xc, yc, r)
       if map[yc+i][xc] == 1 then
         break
       elseif map[yc+i][xc] ~= 0 then
-        map[yc+i][xc] = 0
+        --map[yc+i][xc] = 0
+        map.hidden[yc+i][xc] = 4
+        map.times[yc+i][xc] = duracaoFogo
         break
+      else
+        map.hidden[yc+i][xc] = 4
+        map.times[yc+i][xc] = duracaoFogo
       end
     end
   end
@@ -87,8 +101,13 @@ local explosion = function (map, xc, yc, r)
       if map[yc][xc+j] == 1 then
         break
       elseif map[yc][xc+j] ~= 0 then
-        map[yc][xc+j] = 0
+        --map[yc][xc+j] = 0
+        map.hidden[yc][xc+j] = 4
+        map.times[yc][xc+j] = duracaoFogo
         break
+      else
+        map.hidden[yc][xc+j] = 4
+        map.times[yc][xc+j] = duracaoFogo
       end
     end
   end
@@ -98,12 +117,22 @@ local explosion = function (map, xc, yc, r)
       if map[yc][xc+j] == 1 then
         break
       elseif map[yc][xc+j] ~= 0 then
-        map[yc][xc+j] = 0
+        --map[yc][xc+j] = 0
+        map.hidden[yc][xc+j] = 4
+        map.times[yc][xc+j] = duracaoFogo
         break
+      else
+        map.hidden[yc][xc+j] = 4
+        map.times[yc][xc+j] = duracaoFogo
       end
     end
   end
   
+end
+
+local place_bomb = function (map, x, y, r)
+  map[y][x] = 3
+  map.times[y][x] = 120
 end
 
 
@@ -126,6 +155,34 @@ local empty_space = function (map, _map, empty)
   end
 end
 
+local update = function(map)
+  for i = 1, map.ny do
+    for j = 1, map.nx do
+      if map.hidden[i][j] == 4 then
+        if map[i][j] == 2 then
+          map[i][j] = 0
+        elseif map[i][j] == 3 then
+          map:explosion(j,i,2)
+        end
+      end
+      
+      
+      map.times[i][j] = map.times[i][j] - 1
+      if map.times[i][j] == 0 then
+        if map.hidden[i][j] == 4 then
+          map.hidden[i][j] = 0
+        end
+        
+        if map[i][j] == 3 then
+          map:explosion(j,i,2)
+        end
+        
+      end
+      
+    end
+  end
+end
+
 -- Create and return a new map
 -- nx and ny represents the number of horizontal and vertical cells, respectively,
 -- and must be odd numbers. Empty accounts for the amount of empty space. For 
@@ -137,10 +194,20 @@ function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
   local _map = {walls={}, cycles={}, uf=uf.create()}
   map.explosion = explosion
   map.break_wall = break_wall
+  map.update = update
+  map.place_bomb = place_bomb
+  
+  
+  map.hidden = {}
+  map.times = {}
   
   for i = 1, ny do
-    map[i] = {} 
+    map[i] = {}
+    map.hidden[i] = {}
+    map.times[i] = {}
     for j = 1, nx do
+      map.hidden[i][j] = 0
+      map.times[i][j] = -1
       uf.addnode(_map.uf,id(i,j))
       if i == 1 or j == 1 or i == ny or j == nx or ((i+1)%2==0 and (j+1)%2==0) then
         map[i][j] = 1
@@ -188,6 +255,7 @@ function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
   return map
 end
 
+
 function M.draw (map,walls)
   --local sx1=1/image1:getWidth()
   --local sy1=1/image1:getHeight()
@@ -203,8 +271,18 @@ function M.draw (map,walls)
         sx,sy = wall.sx,wall.sy
         love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
       end
+      
+      wall=walls[map.hidden[i][j]]
+      --wall=walls[1]
+      if wall ~= nil then
+        image = wall["image"]
+        sx,sy = wall.sx,wall.sy
+        love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
+      end
+      
     end
   end
 end
+
 
 return M
