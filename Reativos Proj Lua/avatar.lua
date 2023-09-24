@@ -6,17 +6,16 @@ function ava.avatar_cria (_imagem, pxi, pyi,teclas,consts)
   local imagem = _imagem
   local velocidade = 1
   local x,y = pxi-1/2,pyi-1/2
-  local D = consts.D
-  local nx = consts.nx
-  local ny = consts.ny
   local M = consts.M
-  local r = consts.r
   local raio_bomba = 2
   
   M:break_wall(math.ceil(x),math.ceil(y),1)
   
   function avatar.update(dt)
     local x1,y1 = x,y
+    local nx = consts.nx
+    local ny = consts.ny
+    local r = consts.r
     local dr = (velocidade+1)*dt*1.2
     if love.keyboard.isDown(teclas.right) then
       y1=y1
@@ -110,10 +109,22 @@ function ava.avatar_cria (_imagem, pxi, pyi,teclas,consts)
   end
   
   function avatar.draw()
+    local D = consts.D
+    local nx = consts.nx
+    local ny = consts.ny
     local w,h = love.graphics.getWidth(),love.graphics.getHeight()
     local sxa,sya=(2*((D/nx)/3))/imagem:getWidth(),(2*((D/ny)/3))/imagem:getHeight()
     love.graphics.draw(imagem,(w-D)/2+(x*D/nx),(h-D)/2+(y*D/ny),0,sxa,sya,imagem:getWidth()/2,imagem:getHeight()/2)
   end
+  
+  local function up()
+    while true do
+      avatar.update(1/consts.FPS)
+      coroutine.yield()
+    end
+  end
+  
+  avatar.up = coroutine.wrap(up)
   
   function avatar.set_D(_D)
     D = _D

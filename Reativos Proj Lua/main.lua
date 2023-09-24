@@ -7,12 +7,15 @@ local D=600
 local walls
 local avatarA, avatarB
 local r=1/2
+local FPS = 60
+local tempoAcumulado = 0
+local consts
 
 
 function love.load()
   love.window.setMode(D,D,{resizable = true})
-  area1,area2,area3=love.graphics.newImage("grass.jpg"),love.graphics.newImage("sponge.jpg"),love.graphics.newImage("fire.jpg")
-  avatar1,avatar2,avatar3=love.graphics.newImage("cat.png"),love.graphics.newImage("dog.png"),love.graphics.newImage("raccoon.png")
+  area1,area2,area3=love.graphics.newImage("imagens/grass.jpg"),love.graphics.newImage("imagens/sponge.jpg"),love.graphics.newImage("imagens/fire.jpg")
+  avatar1,avatar2,avatar3=love.graphics.newImage("imagens/cat.png"),love.graphics.newImage("imagens/dog.png"),love.graphics.newImage("imagens/raccoon.png")
   nx,ny=11,11
   
   if estado == "jogo" then
@@ -30,7 +33,7 @@ function love.load()
     table.insert(walls,wall)
   end
   
-  local consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["M"]=M,["r"]=r}
+  consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["M"]=M,["r"]=r,["FPS"]=FPS}
   local teclasA={["left"]="left",["right"]="right",["up"]="up",["down"]="down",["A"]="rshift"}
   local teclasB={["left"]="a",["right"]="d",["up"]="w",["down"]="s",["A"]="e"}
   
@@ -47,10 +50,12 @@ end
 
 
 function love.update(dt)
-  avatarA.update(dt)
-  avatarB.update(dt)
-  
-  
+  tempoAcumulado = tempoAcumulado + dt
+  if tempoAcumulado > 1/FPS then
+    avatarA.up()
+    avatarB.up()
+    tempoAcumulado = tempoAcumulado - 1/FPS
+  end  
 end
 
 
@@ -82,7 +87,8 @@ function love.resize(w, h)
   else
     D = h
   end
-  avatarA.set_D(D)
-  avatarB.set_D(D)
+  consts.D = D
+  --avatarA.set_D(D)
+  --avatarB.set_D(D)
 end
 
