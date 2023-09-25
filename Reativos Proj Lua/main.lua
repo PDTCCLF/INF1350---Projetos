@@ -1,3 +1,6 @@
+--Aluno: Jerônimo Augusto Soares
+--Aluno: Paulo de Tarso Fernandes
+
 local map = require "map"
 local ava = require "avatar"
 local estado = "jogo"
