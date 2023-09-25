@@ -197,7 +197,6 @@ function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
   map.update = update
   map.place_bomb = place_bomb
   
-  
   map.hidden = {}
   map.times = {}
   
@@ -256,22 +255,26 @@ function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
 end
 
 
-function M.draw (map,walls)
+function M.draw (map,walls,background)
+  --love.graphics.setBackgroundColor(1.0,0.0,1.0)
   --local sx1=1/image1:getWidth()
   --local sy1=1/image1:getHeight()
   local wall
   local sx,xy
+  --if walls[map[i - 1][j - 1]] == 0 then
+    --print("oi")
+    --love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
+  --end
   for i = 1, map.ny do
     for j = 1, map.nx do
       love.graphics.setColor(1.0,1.0,1.0)
       wall=walls[map[i][j]]
-      --wall=walls[1]
+      love.graphics.draw(background["image"],(j-1),(i-1),0,background["sx"],background["sy"])
       if wall ~= nil then
         image = wall["image"]
         sx,sy = wall.sx,wall.sy
         love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
       end
-      
       wall=walls[map.hidden[i][j]]
       --wall=walls[1]
       if wall ~= nil then

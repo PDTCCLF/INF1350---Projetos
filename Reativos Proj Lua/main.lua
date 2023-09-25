@@ -10,6 +10,7 @@ local r=1/2
 local FPS = 60
 local tempoAcumulado = 0
 local consts
+local background
 
 local imgBombs
 local iBomb
@@ -19,6 +20,7 @@ local tempoBomb = 0
 function love.load()
   love.window.setMode(D,D,{resizable = true})
   area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
+  background_img=love.graphics.newImage("imagens/mapa/background.png")
   nx,ny=11,11
   
   pathBombs="imagens/bomba/"
@@ -92,6 +94,12 @@ function love.load()
   end
   local imagens = {area1,area2,imgBombs[iBomb],area3}
   walls = {}
+  
+  background = {}
+  background["image"] = background_img
+  background["sx"] = 1/background_img:getWidth()
+  background["sy"] = 1/background_img:getHeight()
+  
   for i, imagem in ipairs(imagens) do
     local wall
     wall = {}
@@ -156,7 +164,7 @@ function love.draw()
   love.graphics.push()
   love.graphics.translate((w-D)/2,(h-D)/2)
   love.graphics.scale(D/nx,D/ny)
-  map.draw(M,walls)
+  map.draw(M,walls,background)
   love.graphics.pop()
   
   avatarA.draw()
