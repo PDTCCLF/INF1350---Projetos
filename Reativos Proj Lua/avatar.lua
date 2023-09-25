@@ -12,6 +12,7 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
   local tempoImg = 0
   local tempoIntervalo = 1/24
   local is_alive = true
+
   M:break_wall(math.ceil(x),math.ceil(y),1)
   
   function avatar.update(dt)

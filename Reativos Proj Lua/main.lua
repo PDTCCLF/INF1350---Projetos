@@ -6,8 +6,8 @@ local ava = require "avatar"
 local estado = "jogo"
 local numPartidas = 3
 local M
-local nx,ny
-local D=600
+local nx,ny=11,11
+local D=800
 local walls
 local avatarA, avatarB
 local r=1/2
@@ -25,40 +25,65 @@ local tempoBomb = 0
 
 local soundEffects
 
+
 function love.load()
   love.window.setMode(D,D,{resizable = true})
-  area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
-  background_img=love.graphics.newImage("imagens/mapa/background.png")
-  nx,ny=11,11
+  
+  
+  --***************************Carregamento dos áudios*********************************************
+  
   music=love.audio.newSource("musica/Bomberman 64 Music Opening Theme.mp3", "stream")
   music:play()
-  
-  pathBombs="imagens/bomba/"
-  imgNomesBombs = {"Bomb_f01.png","Bomb_f02.png","Bomb_f03.png"}
 
-  imgBombs = {}
-  for i, img in pairs(imgNomesBombs) do
-    table.insert(imgBombs,love.graphics.newImage(pathBombs..img))
-  end
-  iBomb=1
-
-  pathSounds="efeitos sonoros/"
-  soundsNomes = {"Explosion sound.mp3","Death sound.mp3"}
+  local pathSounds="efeitos sonoros/"
+  local soundsNomes = {"Explosion sound.mp3","Death sound.mp3"}
   
   soundEffects = {}
   for i, sound in pairs(soundsNomes) do
     table.insert(soundEffects,love.audio.newSource(pathSounds..sound, "static"))
   end
   
-  pathAvatarAfront = "imagens/avatarA/front/"
-  pathAvatarAback = "imagens/avatarA/back/"
-  pathAvatarAright = "imagens/avatarA/right/"
-  pathAvatarAleft = "imagens/avatarA/left/"
-  imgNomesAfront = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
-  imgNomesAback = {"Bman_B_f00.png","Bman_B_f01.png","Bman_B_f02.png","Bman_B_f03.png","Bman_B_f04.png","Bman_B_f05.png","Bman_B_f06.png","Bman_B_f07.png"}
-  imgNomesAright = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
-  imgNomesAleft = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
-  profilesA = {}
+  --***************************Carregamento das imagens*********************************************
+ 
+  --Background
+  local background_img=love.graphics.newImage("imagens/mapa/background.png")
+  background = {}
+  background["image"] = background_img
+  background["sx"] = 1/background_img:getWidth()
+  background["sy"] = 1/background_img:getHeight()
+  
+  
+  --Bombas
+  local pathBombs="imagens/bomba/"
+  local imgNomesBombs = {"Bomb_f01.png","Bomb_f02.png","Bomb_f03.png"}
+  imgBombs = {}
+  for i, img in pairs(imgNomesBombs) do
+    table.insert(imgBombs,love.graphics.newImage(pathBombs..img))
+  end
+  iBomb=1
+  
+  --Paredes
+  local area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
+  local imagens = {area1,area2,imgBombs[iBomb],area3}
+  walls = {}
+  for i, imagem in ipairs(imagens) do
+    local wall = {}
+    wall["image"] = imagem
+    wall["sx"] = 1/imagem:getWidth()
+    wall["sy"] = 1/imagem:getHeight()
+    table.insert(walls,wall)
+  end
+ 
+  --AvatarA
+  local pathAvatarAfront = "imagens/avatarA/front/"
+  local pathAvatarAback = "imagens/avatarA/back/"
+  local pathAvatarAright = "imagens/avatarA/right/"
+  local pathAvatarAleft = "imagens/avatarA/left/"
+  local imgNomesAfront = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
+  local imgNomesAback = {"Bman_B_f00.png","Bman_B_f01.png","Bman_B_f02.png","Bman_B_f03.png","Bman_B_f04.png","Bman_B_f05.png","Bman_B_f06.png","Bman_B_f07.png"}
+  local imgNomesAright = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
+  local imgNomesAleft = {"Bman_F_f00.png","Bman_F_f01.png","Bman_F_f02.png","Bman_F_f03.png","Bman_F_f04.png","Bman_F_f05.png","Bman_F_f06.png","Bman_F_f07.png"}
+  local profilesA = {}
   profilesA.front = {}
   profilesA.back = {}
   profilesA.right = {}
@@ -76,15 +101,16 @@ function love.load()
     table.insert(profilesA.left,love.graphics.newImage(pathAvatarAleft..img))
   end
   
-  pathAvatarBfront = "imagens/avatarB/front/"
-  pathAvatarBback = "imagens/avatarB/back/"
-  pathAvatarBright = "imagens/avatarB/right/"
-  pathAvatarBleft = "imagens/avatarB/left/"
-  imgNomesBfront = {"Creep_F_f00.png","Creep_F_f01.png","Creep_F_f02.png","Creep_F_f03.png","Creep_F_f04.png","Creep_F_f05.png"}
-  imgNomesBback = {"Creep_B_f00.png","Creep_B_f01.png","Creep_B_f02.png","Creep_B_f03.png","Creep_B_f04.png","Creep_B_f05.png"}
-  imgNomesBright = {"Creep_S_f00.png","Creep_S_f01.png","Creep_S_f02.png","Creep_S_f03.png","Creep_S_f04.png","Creep_S_f05.png","Creep_S_f06.png"}
-  imgNomesBleft = {"Creep_S_f00.png","Creep_S_f01.png","Creep_S_f02.png","Creep_S_f03.png","Creep_S_f04.png","Creep_S_f05.png","Creep_S_f06.png"}
-  profilesB = {}
+  --AvatarB
+  local pathAvatarBfront = "imagens/avatarB/front/"
+  local pathAvatarBback = "imagens/avatarB/back/"
+  local pathAvatarBright = "imagens/avatarB/right/"
+  local pathAvatarBleft = "imagens/avatarB/left/"
+  local imgNomesBfront = {"Creep_F_f00.png","Creep_F_f01.png","Creep_F_f02.png","Creep_F_f03.png","Creep_F_f04.png","Creep_F_f05.png"}
+  local imgNomesBback = {"Creep_B_f00.png","Creep_B_f01.png","Creep_B_f02.png","Creep_B_f03.png","Creep_B_f04.png","Creep_B_f05.png"}
+  local imgNomesBright = {"Creep_S_f00.png","Creep_S_f01.png","Creep_S_f02.png","Creep_S_f03.png","Creep_S_f04.png","Creep_S_f05.png","Creep_S_f06.png"}
+  local imgNomesBleft = {"Creep_S_f00.png","Creep_S_f01.png","Creep_S_f02.png","Creep_S_f03.png","Creep_S_f04.png","Creep_S_f05.png","Creep_S_f06.png"}
+  local profilesB = {}
   profilesB.front = {}
   profilesB.back = {}
   profilesB.right = {}
@@ -104,29 +130,16 @@ function love.load()
   
   
   
+  --***************************Criação do mapa*********************************************
   
+  consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["r"]=r,["FPS"]=FPS}
   if estado == "jogo" then
-    M=map.create(nx,ny,false,0.0)
-    wall=area1
+    M=map.create(consts,0.0,soundEffects, walls, background)
   end
-  local imagens = {area1,area2,imgBombs[iBomb],area3}
-  walls = {}
+  consts.M = M
   
-  background = {}
-  background["image"] = background_img
-  background["sx"] = 1/background_img:getWidth()
-  background["sy"] = 1/background_img:getHeight()
+  --***************************Criação dos avatares*********************************************
   
-  for i, imagem in ipairs(imagens) do
-    local wall
-    wall = {}
-    wall["image"] = imagem
-    wall["sx"] = 1/imagem:getWidth()
-    wall["sy"] = 1/imagem:getHeight()
-    table.insert(walls,wall)
-  end
-  
-  consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["M"]=M,["r"]=r,["FPS"]=FPS}
   local teclasA={["left"]="left",["right"]="right",["up"]="up",["down"]="down",["A"]="rshift"}
   local teclasB={["left"]="a",["right"]="d",["up"]="w",["down"]="s",["A"]="e"}
   
@@ -136,11 +149,11 @@ function love.load()
   teclasB.t1="."
   teclasB.t2=","
   
-  --avatarA = ava.avatar_cria(avatar2,2,2,teclasA,consts)
   avatarA = ava.avatar_cria(profilesA,2,2,teclasA,consts,soundEffects[2])
   avatarB = ava.avatar_cria(profilesB,nx-1,ny-1,teclasB,consts,soundEffects[2])
   
 end
+
 
 
 function love.update(dt)  
@@ -150,11 +163,11 @@ function love.update(dt)
     
     avatarA.up()
     avatarB.up()
-    M:update(soundEffects)
+    M:up()
   end  
   
   tempoBomb = tempoBomb + dt
-    
+  
   if tempoBomb > 1/FPSBomb then
     tempoBomb = tempoBomb - 1/FPSBomb
     iBomb = iBomb + 1
@@ -195,16 +208,10 @@ end
 
 
 function love.draw()
-  local w,h = love.graphics.getWidth(),love.graphics.getHeight()
   
   --Desenho do mapa
   if estado == "jogo" then
-    love.graphics.push()
-    love.graphics.translate((w-D)/2,(h-D)/2)
-    love.graphics.scale(D/nx,D/ny)
-    map.draw(M,walls,background)
-    love.graphics.pop()
-    
+    M:draw()
     avatarA.draw()
     avatarB.draw()
   end
@@ -219,7 +226,5 @@ function love.resize(w, h)
     D = h
   end
   consts.D = D
-  --avatarA.set_D(D)
-  --avatarB.set_D(D)
 end
 

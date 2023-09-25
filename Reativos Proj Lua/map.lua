@@ -156,7 +156,7 @@ local empty_space = function (map, _map, empty)
   end
 end
 
-local update = function(map,soundEffects)
+local update = function(map, soundEffects)
   for i = 1, map.ny do
     for j = 1, map.nx do
       if map.hidden[i][j] == 4 then
@@ -184,22 +184,64 @@ local update = function(map,soundEffects)
   end
 end
 
+local draw = function(map)
+  local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+  local D = map.consts.D
+  local nx,ny = map.consts.nx,map.consts.ny
+  
+  love.graphics.push()
+  love.graphics.translate((w-D)/2,(h-D)/2)
+  love.graphics.scale(D/nx,D/ny)
+  
+  local walls = map.walls
+  local background = map.background
+  local wall
+  local sx,xy
+  for i = 1, map.ny do
+    for j = 1, map.nx do
+      love.graphics.setColor(1.0,1.0,1.0)
+      love.graphics.draw(background["image"],(j-1),(i-1),0,background["sx"],background["sy"])
+      
+      wall=walls[map[i][j]]
+      if wall ~= nil then
+        image = wall["image"]
+        sx,sy = wall.sx,wall.sy
+        love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
+      end
+      
+      wall=walls[map.hidden[i][j]]
+      if wall ~= nil then
+        image = wall["image"]
+        sx,sy = wall.sx,wall.sy
+        love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
+      end
+      
+    end
+  end
+  
+  love.graphics.pop()
+end
+
 -- Create and return a new map
 -- nx and ny represents the number of horizontal and vertical cells, respectively,
 -- and must be odd numbers. Empty accounts for the amount of empty space. For 
 -- empty=0.0, the returned map is a maze without cycles; for empty=1.0, the whole
 -- domain is empty (without internal walls).
 -- If doors are requested, they are placed at cells (2,ny) and (nx-1,1).
-function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
-  local map = {nx=nx, ny=ny} 
+function M.create (consts, empty, soundEffects, walls, background) -- dimensions must be odd numbers
+  local map = {nx=consts.nx, ny=consts.ny}
   local _map = {walls={}, cycles={}, uf=uf.create()}
   map.explosion = explosion
   map.break_wall = break_wall
   map.update = update
   map.place_bomb = place_bomb
-  
+  map.draw = draw
   map.hidden = {}
   map.times = {}
+  map.walls = walls
+  map.background = background
+  map.consts = consts
+  local nx,ny = consts.nx, consts.ny
   
   for i = 1, ny do
     map[i] = {}
@@ -232,61 +274,25 @@ function M.create (nx, ny, doors, empty) -- dimensions must be odd numbers
     end
   end
   do_maze(map,_map)
-  --break_wall(map,2,2,1)
-  --break_wall(map,map.nx-1,map.ny-1,1)
   
   
-  
-  
-  --break_wall(map,10,10,1)
-  --explosion(map,10,10,2)
-  --map:explosion(10,10,2)
-  --explosion(map,10,12,2)
-  --explosion(map,9,12,2)
-  
-  
-  
-  
-  
-  if doors then
-    --do_doors(map)
+  local function up()
+    while true do
+      map:update(soundEffects)
+      coroutine.yield()
+    end
   end
+  
+  map.up = coroutine.wrap(up)
+  
+  
+  
   --empty_space(map,_map,empty)
   return map
 end
 
 
-function M.draw (map,walls,background)
-  --love.graphics.setBackgroundColor(1.0,0.0,1.0)
-  --local sx1=1/image1:getWidth()
-  --local sy1=1/image1:getHeight()
-  local wall
-  local sx,xy
-  --if walls[map[i - 1][j - 1]] == 0 then
-    --print("oi")
-    --love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
-  --end
-  for i = 1, map.ny do
-    for j = 1, map.nx do
-      love.graphics.setColor(1.0,1.0,1.0)
-      wall=walls[map[i][j]]
-      love.graphics.draw(background["image"],(j-1),(i-1),0,background["sx"],background["sy"])
-      if wall ~= nil then
-        image = wall["image"]
-        sx,sy = wall.sx,wall.sy
-        love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
-      end
-      wall=walls[map.hidden[i][j]]
-      --wall=walls[1]
-      if wall ~= nil then
-        image = wall["image"]
-        sx,sy = wall.sx,wall.sy
-        love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
-      end
-      
-    end
-  end
-end
+
 
 
 return M
