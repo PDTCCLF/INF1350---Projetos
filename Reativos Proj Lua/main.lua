@@ -1,6 +1,7 @@
 local map = require "map"
 local ava = require "avatar"
 local estado = "jogo"
+local numPartidas = 3
 local M
 local nx,ny
 local D=600
@@ -9,6 +10,8 @@ local avatarA, avatarB
 local r=1/2
 local FPS = 60
 local tempoAcumulado = 0
+local tempoMorte = 0
+local tempoRestart = 0
 local consts
 local background
 
@@ -17,11 +20,15 @@ local iBomb
 local FPSBomb = 6
 local tempoBomb = 0
 
+local soundEffects
+
 function love.load()
   love.window.setMode(D,D,{resizable = true})
   area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
   background_img=love.graphics.newImage("imagens/mapa/background.png")
   nx,ny=11,11
+  music=love.audio.newSource("musica/Bomberman 64 Music Opening Theme.mp3", "stream")
+  music:play()
   
   pathBombs="imagens/bomba/"
   imgNomesBombs = {"Bomb_f01.png","Bomb_f02.png","Bomb_f03.png"}
@@ -32,6 +39,13 @@ function love.load()
   end
   iBomb=1
 
+  pathSounds="efeitos sonoros/"
+  soundsNomes = {"Explosion sound.mp3","Death sound.mp3"}
+  
+  soundEffects = {}
+  for i, sound in pairs(soundsNomes) do
+    table.insert(soundEffects,love.audio.newSource(pathSounds..sound, "static"))
+  end
   
   pathAvatarAfront = "imagens/avatarA/front/"
   pathAvatarAback = "imagens/avatarA/back/"
@@ -120,20 +134,20 @@ function love.load()
   teclasB.t2=","
   
   --avatarA = ava.avatar_cria(avatar2,2,2,teclasA,consts)
-  avatarA = ava.avatar_cria(profilesA,2,2,teclasA,consts)
-  avatarB = ava.avatar_cria(profilesB,nx-1,ny-1,teclasB,consts)
+  avatarA = ava.avatar_cria(profilesA,2,2,teclasA,consts,soundEffects[2])
+  avatarB = ava.avatar_cria(profilesB,nx-1,ny-1,teclasB,consts,soundEffects[2])
   
 end
 
 
-function love.update(dt)
+function love.update(dt)  
   tempoAcumulado = tempoAcumulado + dt
   if tempoAcumulado > 1/FPS then
     tempoAcumulado = tempoAcumulado - 1/FPS
     
     avatarA.up()
     avatarB.up()
-    M:update()
+    M:update(soundEffects)
   end  
   
   tempoBomb = tempoBomb + dt
@@ -147,7 +161,27 @@ function love.update(dt)
     walls[3].image = imgBombs[iBomb]
   end
   
-  
+  if avatarA.status("check") == false or avatarB.status("check") == false then
+    tempoMorte = tempoMorte + dt
+    if tempoMorte > 2 then
+      music:stop()
+      estado="fim de partida"
+      numPartidas = numPartidas - 1
+      tempoMorte = 0
+    end
+  end
+
+  if estado == "fim de partida" then
+    tempoRestart = tempoRestart + dt
+    if tempoRestart > 2 and numPartidas > 0 then
+      estado="jogo"
+      if avatarA.status("check") == false then
+        avatarA.status("change")
+      elseif avatarB.status("check") == false then
+        avatarB.status("change")
+      end
+    end
+  end
 end
 
 
@@ -161,14 +195,16 @@ function love.draw()
   local w,h = love.graphics.getWidth(),love.graphics.getHeight()
   
   --Desenho do mapa
-  love.graphics.push()
-  love.graphics.translate((w-D)/2,(h-D)/2)
-  love.graphics.scale(D/nx,D/ny)
-  map.draw(M,walls,background)
-  love.graphics.pop()
-  
-  avatarA.draw()
-  avatarB.draw()
+  if estado == "jogo" then
+    love.graphics.push()
+    love.graphics.translate((w-D)/2,(h-D)/2)
+    love.graphics.scale(D/nx,D/ny)
+    map.draw(M,walls,background)
+    love.graphics.pop()
+    
+    avatarA.draw()
+    avatarB.draw()
+  end
   
 end
 

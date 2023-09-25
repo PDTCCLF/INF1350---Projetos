@@ -59,11 +59,12 @@ local break_wall = function (map, xc, yc, r)
   end
 end
 
-local explosion = function (map, xc, yc, r)
+local explosion = function (map, xc, yc, r, sound)
   map[yc][xc] = 0
   map.hidden[yc][xc] = 4
   duracaoFogo = 120
   map.times[yc][xc] = duracaoFogo
+  sound:play()
   for i=0,r do
     if yc+i>0 and yc+i<map.ny then
       if map[yc+i][xc] == 1 then
@@ -155,14 +156,14 @@ local empty_space = function (map, _map, empty)
   end
 end
 
-local update = function(map)
+local update = function(map,soundEffects)
   for i = 1, map.ny do
     for j = 1, map.nx do
       if map.hidden[i][j] == 4 then
         if map[i][j] == 2 then
           map[i][j] = 0
         elseif map[i][j] == 3 then
-          map:explosion(j,i,2)
+          map:explosion(j,i,2,soundEffects[1])
         end
       end
       
@@ -174,7 +175,7 @@ local update = function(map)
         end
         
         if map[i][j] == 3 then
-          map:explosion(j,i,2)
+          map:explosion(j,i,2,soundEffects[1])
         end
         
       end
