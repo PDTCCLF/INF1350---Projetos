@@ -3,14 +3,15 @@ local ava = {}
 
 function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
   local avatar = {}
-  local imagem = imagens.front[1]
-  local velocidade = 1
-  local x,y = pxi-1/2,pyi-1/2
   local M = consts.M
-  local raio_bomba = 2
+  local imagem = imagens.front[1]
   local iImg = 1
   local tempoImg = 0
   local tempoIntervalo = 1/24
+  
+  local velocidade = 1
+  local x,y = pxi-1/2,pyi-1/2
+  local raio_bomba = 2
   local is_alive = true
 
   M:break_wall(math.ceil(x),math.ceil(y),1)
@@ -148,9 +149,7 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
       end
       
       x,y = x1,y1
-    
     end
-    
   end
   
   function avatar.keypressed(key)
@@ -158,13 +157,11 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
       local i1=math.ceil(y)
       local j1=math.ceil(x)
       
-      --M[i1][j1] = 3
-      --M:explosion(j1,i1,raio_bomba)
       M:place_bomb(j1,i1,raio_bomba)
       
     elseif key == teclas.t1 and velocidade < 3 then
       velocidade = velocidade + 0.25
-    elseif key == teclas.t2 and velocidade > 0 then
+    elseif key == teclas.t2 and velocidade > 1 then
       velocidade = velocidade - 0.25
     end
   end
@@ -183,9 +180,26 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
   function avatar.status(operation)
     if operation == "check" then
       return is_alive
-    elseif operation == "change" then
-      is_alive = not is_alive
+    elseif operation == "ressurect" then
+      velocidade = 1
+      x,y = pxi-1/2,pyi-1/2
+      raio_bomba = 2
+      iImg = 1
+      tempoImg = 0
+      is_alive = true
+      M:break_wall(math.ceil(x),math.ceil(y),1)
     end
+  end
+  
+  function avatar.draw2(x,y)
+    local D = consts.D
+    local nx = consts.nx
+    local ny = consts.ny
+    local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+    local sxa,sya=(2*((D/nx)/3))/imagem:getWidth(),(2*((D/ny)/3))/imagem:getHeight()
+    iImg = 1
+    imagem = imagens.front[iImg]
+    love.graphics.draw(imagem,x,y,0,sxa,sya,imagem:getWidth()/2,imagem:getHeight()/2)
   end
   
   local function up()
@@ -196,10 +210,6 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
   end
   
   avatar.up = coroutine.wrap(up)
-  
-  function avatar.set_D(_D)
-    D = _D
-  end
   
   return avatar
 end

@@ -3,31 +3,47 @@
 
 local map = require "map"
 local ava = require "avatar"
-local estado = "jogo"
-local numPartidas = 3
+
 local M
-local nx,ny=11,11
-local D=800
 local walls
 local avatarA, avatarB
-local r=1/2
-local FPS = 60
+local soundEffects
+local vencedor
+local consts
+local background
+local imgBombs
+local iBomb
+
 local tempoAcumulado = 0
 local tempoMorte = 0
 local tempoRestart = 0
-local consts
-local background
-
-local imgBombs
-local iBomb
-local FPSBomb = 6
 local tempoBomb = 0
+local placar = {A=0, B=0}
+local estado = "jogo"
 
-local soundEffects
+local nx,ny=15,13
+local D=800
+local tamFont = D/10
+local r=1/2
+local FPS = 60
+
+local FPSBomb = 6
+local tempoBomba = 3
+local duracaoFogo = 1
+local maxPontos = 3
+
+
+function drawCenteredText(rectX, rectY, rectWidth, rectHeight, text)
+	local font       = love.graphics.getFont()
+	local textWidth  = font:getWidth(text)
+	local textHeight = font:getHeight()
+	love.graphics.print(text, rectX+rectWidth/2, rectY+rectHeight/2, 0, 1, 1, textWidth/2, textHeight/2)
+end
 
 
 function love.load()
   love.window.setMode(D,D,{resizable = true})
+  love.graphics.setNewFont("ariblk.ttf",tamFont)
   
   
   --***************************Carregamento dos áudios*********************************************
@@ -43,15 +59,15 @@ function love.load()
     table.insert(soundEffects,love.audio.newSource(pathSounds..sound, "static"))
   end
   
+  
   --***************************Carregamento das imagens*********************************************
  
   --Background
-  local background_img=love.graphics.newImage("imagens/mapa/background.png")
+  local background_img=love.graphics.newImage("imagens/mapa/BackgroundTile.png")
   background = {}
   background["image"] = background_img
   background["sx"] = 1/background_img:getWidth()
   background["sy"] = 1/background_img:getHeight()
-  
   
   --Bombas
   local pathBombs="imagens/bomba/"
@@ -63,7 +79,7 @@ function love.load()
   iBomb=1
   
   --Paredes
-  local area1,area2,area3=love.graphics.newImage("imagens/mapa/grass.jpg"),love.graphics.newImage("imagens/mapa/sponge.jpg"),love.graphics.newImage("imagens/mapa/fire.jpg")
+  local area1,area2,area3,area4=love.graphics.newImage("imagens/mapa/SolidBlock.png"),love.graphics.newImage("imagens/mapa/tijolo.png"),love.graphics.newImage("imagens/mapa/fogo.png"),love.graphics.newImage("imagens/mapa/tijoloFogo.png")
   local imagens = {area1,area2,imgBombs[iBomb],area3}
   walls = {}
   for i, imagem in ipairs(imagens) do
@@ -129,21 +145,21 @@ function love.load()
   end
   
   
-  
   --***************************Criação do mapa*********************************************
   
-  consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["r"]=r,["FPS"]=FPS}
+  consts = {["D"]=D,["nx"]=nx,["ny"]=ny,["r"]=r,["FPS"]=FPS,["duracaoFogo"]=duracaoFogo,["tempoBomba"]=tempoBomba}
   if estado == "jogo" then
     M=map.create(consts,0.0,soundEffects, walls, background)
   end
   consts.M = M
   
+  
   --***************************Criação dos avatares*********************************************
   
-  local teclasA={["left"]="left",["right"]="right",["up"]="up",["down"]="down",["A"]="rshift"}
-  local teclasB={["left"]="a",["right"]="d",["up"]="w",["down"]="s",["A"]="e"}
+  local teclasA={["left"]="a",["right"]="d",["up"]="w",["down"]="s",["A"]="e"}
+  local teclasB={["left"]="left",["right"]="right",["up"]="up",["down"]="down",["A"]="rshift"}
   
-  --Teclas de teste
+  --Teclas de velocidade
   teclasA.t1="."
   teclasA.t2=","
   teclasB.t1="."
@@ -157,63 +173,124 @@ end
 
 
 function love.update(dt)  
-  tempoAcumulado = tempoAcumulado + dt
-  if tempoAcumulado > 1/FPS then
-    tempoAcumulado = tempoAcumulado - 1/FPS
+  
+  if estado == "jogo" then
+  
+    tempoAcumulado = tempoAcumulado + dt
+    if tempoAcumulado > 1/FPS then
+      tempoAcumulado = tempoAcumulado - 1/FPS
+      
+      avatarA.up()
+      avatarB.up()
+      M:up()
+    end  
     
-    avatarA.up()
-    avatarB.up()
-    M:up()
-  end  
-  
-  tempoBomb = tempoBomb + dt
-  
-  if tempoBomb > 1/FPSBomb then
-    tempoBomb = tempoBomb - 1/FPSBomb
-    iBomb = iBomb + 1
-    if iBomb > #imgBombs then
-      iBomb = 1
+    tempoBomb = tempoBomb + dt
+    
+    if tempoBomb > 1/FPSBomb then
+      tempoBomb = tempoBomb - 1/FPSBomb
+      iBomb = iBomb + 1
+      if iBomb > #imgBombs then
+        iBomb = 1
+      end
+      walls[3].image = imgBombs[iBomb]
     end
-    walls[3].image = imgBombs[iBomb]
-  end
+    
+    local sA = avatarA.status("check")
+    local sB = avatarB.status("check")
+    
+    if not sA or not sB then
+      estado = "morte"
+      vencedor = nil
+      if not sA and sB then
+        placar.B = placar.B + 1
+        vencedor = avatarB
+      elseif sA and not sB then
+        placar.A = placar.A + 1
+        vencedor = avatarA
+      end
+    end
   
-  if avatarA.status("check") == false or avatarB.status("check") == false then
+  elseif estado == "morte" then
     tempoMorte = tempoMorte + dt
     if tempoMorte > 2 then
       music:stop()
-      estado="fim de partida"
-      numPartidas = numPartidas - 1
-      tempoMorte = 0
-    end
-  end
-
-  if estado == "fim de partida" then
-    tempoRestart = tempoRestart + dt
-    if tempoRestart > 2 and numPartidas > 0 then
-      estado="jogo"
-      if avatarA.status("check") == false then
-        avatarA.status("change")
-      elseif avatarB.status("check") == false then
-        avatarB.status("change")
+      local maior
+      if placar.A > placar.B then
+        maior = placar.A
+      else
+        maior = placar.B
+      end
+      if maior < maxPontos then
+        estado="fim de partida"        
+        tempoMorte = 0
+        tempoRestart = 0
+      else
+        estado="fim de jogo"
       end
     end
+  
+  elseif estado == "fim de partida" then
+    tempoRestart = tempoRestart + dt
+    if tempoRestart > 2 then
+      M:reinicia()
+      music:play()
+      avatarA.status("ressurect")
+      avatarB.status("ressurect")
+      estado="jogo"
+    end
   end
+  
 end
 
 
 function love.keypressed(key)
-  avatarA.keypressed(key)
-  avatarB.keypressed(key)
+  if estado == "jogo" then
+    avatarA.keypressed(key)
+    avatarB.keypressed(key)
+    if key == "space" or key == "return" then
+      estado = "pause"
+      music:pause()
+    end
+  elseif estado == "pause" then
+    if key == "space" or key == "return" then
+      estado = "jogo"
+      music:play()
+    end
+  end
 end
+
 
 
 function love.draw()
   
   --Desenho do mapa
-  if estado == "jogo" then
+  if estado == "jogo" or estado == "pause" or estado == "morte" then
     M:draw()
     avatarA.draw()
     avatarB.draw()
+  
+  elseif estado == "fim de partida" then
+    local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+    local textoPlacar = placar.A.." x "..placar.B
+    drawCenteredText(0,0, w, h + tamFont*(1), textoPlacar)
+    
+    avatarA.draw2(w/2+tamFont*(-2),h/2+tamFont*(0.5))
+    avatarB.draw2(w/2+tamFont*2,h/2+tamFont*(0.5))
+    
+    if vencedor ~= nil then
+      vencedor.draw2(w/2+tamFont*(-2),h/2+tamFont*(-2))
+      drawCenteredText(0,0, w, h + tamFont*(-4), "  + 1 PT")
+    else
+      drawCenteredText(0,0, w, h + tamFont*(-4), "EMPATE")
+    end
+  
+  elseif estado == "fim de jogo" then
+    local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+    vencedor.draw2(w/2+tamFont*(-2.5),h/2+tamFont*(-2))
+    drawCenteredText(0,0, w, h + tamFont*(-4), "   VENCEU")
+    local textoPlacar = placar.A.." x "..placar.B
+    drawCenteredText(0,0, w, h + tamFont*(1), textoPlacar)
   end
   
 end
@@ -225,6 +302,8 @@ function love.resize(w, h)
   else
     D = h
   end
+  tamFont = D/10
+  love.graphics.setNewFont("ariblk.ttf",tamFont)
   consts.D = D
 end
 
