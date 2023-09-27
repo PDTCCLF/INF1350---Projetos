@@ -266,6 +266,13 @@ end
 function love.draw()
   
   --Desenho do mapa
+  
+  if estado == "jogo" then
+    if not music:isPlaying() then
+      music:play()
+    end
+  end
+  
   if estado == "jogo" or estado == "pause" or estado == "morte" then
     M:draw()
     avatarA.draw()
