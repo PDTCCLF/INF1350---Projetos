@@ -11,7 +11,7 @@ function ava.avatar_cria (imagens, pxi, pyi, teclas, consts, sound)
   
   local velocidade = 1
   local x,y = pxi-1/2,pyi-1/2
-  local raio_bomba = 2
+  local raio_bomba = 4
   local is_alive = true
 
   M:break_wall(math.ceil(x),math.ceil(y),1)

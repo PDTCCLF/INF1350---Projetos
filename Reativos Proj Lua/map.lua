@@ -57,7 +57,7 @@ local explosion = function (map, xc, yc, r, sound)
   end
   
   for j=0,r do
-    if xc+j>0 and xc+j<map.ny then
+    if xc+j>0 and xc+j<map.nx then
       if map[yc][xc+j] == 1 then
         break
       elseif map[yc][xc+j] ~= 0 then
@@ -72,7 +72,7 @@ local explosion = function (map, xc, yc, r, sound)
   end
   
   for j=0,-r,-1 do
-    if xc+j>0 and xc+j<map.ny then
+    if xc+j>0 and xc+j<map.nx then
       if map[yc][xc+j] == 1 then
         break
       elseif map[yc][xc+j] ~= 0 then
@@ -99,7 +99,7 @@ local update = function(map, soundEffects)
     for j = 1, map.nx do
       if map.hidden[i][j] == 4 then
         if map[i][j] == 2 then
-          map[i][j] = 0
+          map[i][j] = 5
         elseif map[i][j] == 3 then
           map:explosion(j,i,2,soundEffects[1])
         end
@@ -109,6 +109,7 @@ local update = function(map, soundEffects)
       if map.times[i][j] == 0 then
         if map.hidden[i][j] == 4 then
           map.hidden[i][j] = 0
+          map[i][j] = 0
         end
         if map[i][j] == 3 then
           map:explosion(j,i,2,soundEffects[1])
@@ -138,14 +139,14 @@ local draw = function(map)
       love.graphics.setColor(1.0,1.0,1.0)
       love.graphics.draw(background["image"],(j-1),(i-1),0,background["sx"],background["sy"])
       
-      wall=walls[map[i][j]]
+      wall=walls[map.hidden[i][j]]
       if wall ~= nil then
         image = wall["image"]
         sx,sy = wall.sx,wall.sy
         love.graphics.draw(image,(j-1),(i-1),0,sx,sy)
       end
       
-      wall=walls[map.hidden[i][j]]
+      wall=walls[map[i][j]]
       if wall ~= nil then
         image = wall["image"]
         sx,sy = wall.sx,wall.sy

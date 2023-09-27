@@ -23,7 +23,7 @@ local estado = "jogo"
 
 local nx,ny=15,13
 local D=800
-local tamFont = D/10
+local tamFont = D/15
 local r=1/2
 local FPS = 60
 
@@ -43,7 +43,8 @@ end
 
 function love.load()
   love.window.setMode(D,D,{resizable = true})
-  love.graphics.setNewFont("ariblk.ttf",tamFont)
+  love.window.setTitle("Bomberman Reativos")
+  love.graphics.setNewFont("PixelOperator8.ttf",tamFont)
   
   
   --***************************Carregamento dos áudios*********************************************
@@ -52,7 +53,7 @@ function love.load()
   music:play()
 
   local pathSounds="efeitos sonoros/"
-  local soundsNomes = {"Explosion sound.mp3","Death sound.mp3"}
+  local soundsNomes = {"minecraft-tnt-explosion.mp3","Death sound.mp3"}
   
   soundEffects = {}
   for i, sound in pairs(soundsNomes) do
@@ -80,7 +81,7 @@ function love.load()
   
   --Paredes
   local area1,area2,area3,area4=love.graphics.newImage("imagens/mapa/SolidBlock.png"),love.graphics.newImage("imagens/mapa/tijolo.png"),love.graphics.newImage("imagens/mapa/fogo.png"),love.graphics.newImage("imagens/mapa/tijoloFogo.png")
-  local imagens = {area1,area2,imgBombs[iBomb],area3}
+  local imagens = {area1,area2,imgBombs[iBomb],area3,area4}
   walls = {}
   for i, imagem in ipairs(imagens) do
     local wall = {}
@@ -275,11 +276,11 @@ function love.draw()
     local textoPlacar = placar.A.." x "..placar.B
     drawCenteredText(0,0, w, h + tamFont*(1), textoPlacar)
     
-    avatarA.draw2(w/2+tamFont*(-2),h/2+tamFont*(0.5))
-    avatarB.draw2(w/2+tamFont*2,h/2+tamFont*(0.5))
+    avatarA.draw2(w/2+tamFont*(-2.5),h/2+tamFont*(0.5))
+    avatarB.draw2(w/2+tamFont*2.5,h/2+tamFont*(0.5))
     
     if vencedor ~= nil then
-      vencedor.draw2(w/2+tamFont*(-2),h/2+tamFont*(-2))
+      vencedor.draw2(w/2+tamFont*(-2.5),h/2+tamFont*(-2))
       drawCenteredText(0,0, w, h + tamFont*(-4), "  + 1 PT")
     else
       drawCenteredText(0,0, w, h + tamFont*(-4), "EMPATE")
@@ -302,8 +303,8 @@ function love.resize(w, h)
   else
     D = h
   end
-  tamFont = D/10
-  love.graphics.setNewFont("ariblk.ttf",tamFont)
+  tamFont = D/15
+  love.graphics.setNewFont("PixelOperator8.ttf",tamFont)
   consts.D = D
 end
 
