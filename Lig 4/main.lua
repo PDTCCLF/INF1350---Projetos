@@ -19,7 +19,7 @@ local tempoBomb = 0
 local placar = {A=0, B=0}
 local estado = "jogo"
 
-local nx,ny=7,6
+local nx,ny=7,7
 local D=700
 local tamFont = D/15
 local r=1/2
@@ -97,6 +97,8 @@ function love.load()
   end
   consts.M = M
   
+  --love.graphics.setBackgroundColor(255,255,255)
+  
 end
   --***************************Criação dos avatares*********************************************
   
@@ -153,9 +155,9 @@ function love.draw()
   if estado == "jogo" or estado == "pause" or estado == "morte" then
     M:draw()
   end
-  
-  
 end
+
+
 
 function love.resize(w, h)
   --Função executada quando alguém redimensiona a tela

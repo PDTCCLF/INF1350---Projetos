@@ -119,6 +119,26 @@ local update = function(map, soundEffects)
   end
 end
 
+local function draw0(x,y,L,r)
+  local function myStencilFunction()
+     -- Draw four overlapping circles as a stencil.
+     love.graphics.circle("fill", x+L/2, y+L/2, r)
+  end
+  
+  love.graphics.stencil(myStencilFunction, "increment")
+ 
+  -- Only allow drawing in areas which have stencil values that are less than 2.
+  love.graphics.setStencilTest("less", 1)
+
+  -- Draw a big rectangle.
+  love.graphics.rectangle("fill", x, y, L, L)
+
+  love.graphics.setStencilTest()
+
+
+end
+
+
 local draw = function(map)
   local w,h = love.graphics.getWidth(),love.graphics.getHeight()
   local D = map.consts.D
@@ -133,25 +153,30 @@ local draw = function(map)
   love.graphics.scale(D/nx,D/nx)
   
   
+  
+  
   for i = 1, map.ny do
     for j = 1, map.nx do
       local squareSize = 1
-      love.graphics.setColor(1.0,0.0,0.0)
-      love.graphics.rectangle("fill", (j - 1) * squareSize,  (i - 1) * squareSize, squareSize, squareSize)
-      love.graphics.setColor(1.0, 1.0, 1.0)
-      love.graphics.circle("fill", (j - 1) * squareSize + squareSize / 2, (i - 1) * squareSize + squareSize / 2,squareSize / 2 - 0.1)
       
-      wall=walls[map[i][j]]
-      if wall ~= nil then
-        if map[i][j] == 1 then
-          love.graphics.setColor(1.0,1.0,0.0)
-          love.graphics.circle("fill", (j - 1) * squareSize + squareSize / 2, (i - 1) * squareSize + squareSize / 2,squareSize / 2 - 0.1)
-        elseif map[i][j] == 2 then
-          love.graphics.setColor(0.0,0.0,1.0)
-          love.graphics.circle("fill", (j - 1) * squareSize + squareSize / 2, (i - 1) * squareSize + squareSize / 2,squareSize / 2 - 0.1)
-        end
+      if map.hidden[i][j] == 1 then
+        love.graphics.setColor(1.0,1.0,0.0)
+        love.graphics.circle("fill", (j - 1) * squareSize + squareSize / 2, (i - 1) * squareSize + squareSize / 2,squareSize / 2 - 0.1)
+      elseif map.hidden[i][j] == 2 then
+        love.graphics.setColor(0.0,0.0,1.0)
+        love.graphics.circle("fill", (j - 1) * squareSize + squareSize / 2, (i - 1) * squareSize + squareSize / 2,squareSize / 2 - 0.1)
       end
-      
+    end
+  end
+    
+    
+  for i = 1, map.ny do
+    for j = 1, map.nx do
+      local squareSize = 1
+      if map[i][j] == 0 then
+          love.graphics.setColor(1.0,0.0,0.0)
+          draw0((j - 1) * squareSize,  (i - 1) * squareSize, squareSize, squareSize/2 - 0.1)
+      end
     end
   end
   
@@ -166,11 +191,13 @@ local reinicia = function(map)
     for j = 1, map.nx do
       map.hidden[i][j] = 0
       map.times[i][j] = -1
-      map[i][j] = 0
+      if i > 1 then
+        map[i][j] = 0
+      end
       if i == 1 and j == 1 then
-        map[i][j] = 1
-      elseif i == 6 and j == 7 then
-        map[i][j] = 2
+        map.hidden[i][j] = 1
+      elseif i == map.consts.ny and j == map.consts.nx then
+        map.hidden[i][j] = 2
       end
     end
   end
