@@ -129,8 +129,8 @@ local draw = function(map)
   local sx,xy
   
   love.graphics.push()
-  love.graphics.translate((w-D)/2,(h-D)/2)
-  love.graphics.scale(D/nx,D/ny)
+  love.graphics.translate((w-D)/2,(h-D*ny/nx)/2)
+  love.graphics.scale(D/nx,D/nx)
   
   
   for i = 1, map.ny do

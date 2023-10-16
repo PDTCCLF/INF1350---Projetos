@@ -40,7 +40,7 @@ end
 
 
 function love.load()
-  love.window.setMode(D,D,{resizable = true})
+  love.window.setMode(D,D*ny/nx,{resizable = true})
   love.window.setTitle("Lig 4")
   love.graphics.setNewFont("PixelOperator8.ttf",tamFont)
   
@@ -159,10 +159,10 @@ end
 
 function love.resize(w, h)
   --Função executada quando alguém redimensiona a tela
-  if w < h then
+  if w/nx < h/ny then
     D = w
   else
-    D = h
+    D = h*nx/ny
   end
   tamFont = D/15
   love.graphics.setNewFont("PixelOperator8.ttf",tamFont)
