@@ -97,7 +97,7 @@ function love.load()
   end
   consts.M = M
   
-  --love.graphics.setBackgroundColor(255,255,255)
+  love.graphics.setBackgroundColor(255,255,255)
   
 end
   --***************************Criação dos avatares*********************************************
@@ -138,6 +138,14 @@ function love.keypressed(key)
       --music:play()
     end
   end
+  if key == "." then
+    M:dropPiece()
+  elseif key == "left" then
+    M:leftPiece()
+  elseif key == "right" then
+    M:rightPiece()
+  end
+    
 end
 
 

@@ -94,6 +94,25 @@ end
 
 
 local update = function(map, soundEffects)
+  local f = map.fantasma
+  
+  if f.peca == 0 then return end
+  
+  local velocidade = 5
+  local dt = 1/map.consts.FPS
+  local dr = (velocidade+1)*dt*1.2
+  
+  f.y = f.y + dr
+  
+  if f.y >= f.yd then
+    map.hidden[f.i][f.j] = f.peca
+    f.peca = 0
+  end
+  
+  
+  
+  
+  --[[
   for i = 1, map.ny do
     for j = 1, map.nx do
       if map.hidden[i][j] == 4 then
@@ -117,6 +136,7 @@ local update = function(map, soundEffects)
       
     end
   end
+  --]]
 end
 
 local function draw0(x,y,L,r)
@@ -138,6 +158,74 @@ local function draw0(x,y,L,r)
 
 end
 
+local function leftPiece(map)
+  local i=1
+  local j
+  for j = 1, map.nx do
+    if map.hidden[i][j] ~= 0 then
+      peca = map.hidden[i][j]
+      map.hidden[i][j] = 0
+      j = (j-2)%map.nx+1
+      map.hidden[i][j] = peca
+      break
+    end
+  end
+end
+
+
+local function rightPiece(map)
+  local i=1
+  local j
+  for j = 1, map.nx do
+    if map.hidden[i][j] ~= 0 then
+      peca = map.hidden[i][j]
+      map.hidden[i][j] = 0
+      j = (j)%map.nx+1
+      map.hidden[i][j] = peca
+      break
+    end
+  end
+end
+
+local function dropPiece(map)
+  local i=1
+  local j
+  local f = map.fantasma
+  local squareSize = 1
+  if f.peca ~= 0 then return end
+  for j = 1, map.nx do
+    
+    
+    if map.hidden[i][j] ~= 0 then
+      f.peca = map.hidden[i][j]
+      
+      map.hidden[i][j] = f.peca%2 + 1
+      
+      f.y = (i - 1) * squareSize + squareSize / 2
+      f.x = (j - 1) * squareSize + squareSize / 2
+      
+      if map.hidden[map.ny][j] == 0 then
+        f.yd = (map.ny - 1) * squareSize + squareSize / 2
+        
+        --map.hidden[map.ny][j] = peca
+        f.i, f.j = map.ny, j
+      else
+        for i = 2, map.ny do
+          if map.hidden[i][j] ~= 0 then
+            f.yd = (i-1 - 1) * squareSize + squareSize / 2
+            f.i, f.j = i - 1, j
+            --map.hidden[i-1][j] = peca
+            break
+          end
+        end
+      end
+      break
+    end
+  end
+  
+end
+
+
 
 local draw = function(map)
   local w,h = love.graphics.getWidth(),love.graphics.getHeight()
@@ -147,13 +235,21 @@ local draw = function(map)
   local background = map.background
   local wall
   local sx,xy
+  local f = map.fantasma
   
   love.graphics.push()
   love.graphics.translate((w-D)/2,(h-D*ny/nx)/2)
   love.graphics.scale(D/nx,D/nx)
   
   
-  
+  if f.peca == 1 then
+    love.graphics.setColor(1.0,1.0,0.0)
+    love.graphics.circle("fill", f.x, f.y, f.r)
+  elseif f.peca == 2 then
+    love.graphics.setColor(0.0,0.0,1.0)
+    love.graphics.circle("fill", f.x, f.y, f.r)
+  end
+
   
   for i = 1, map.ny do
     for j = 1, map.nx do
@@ -196,11 +292,12 @@ local reinicia = function(map)
       end
       if i == 1 and j == 1 then
         map.hidden[i][j] = 1
-      elseif i == map.consts.ny and j == map.consts.nx then
-        map.hidden[i][j] = 2
       end
     end
   end
+  local squareSize =1
+  map.fantasma = {peca=0,r=squareSize / 2 - 0.1}
+  
 end
   
 
@@ -218,6 +315,9 @@ function M.create (consts, empty, soundEffects, walls, background) -- dimensions
   map.background = background
   map.consts = consts
   map.reinicia = reinicia
+  map.dropPiece = dropPiece
+  map.leftPiece = leftPiece
+  map.rightPiece = rightPiece
   
   local function up()
     while true do
@@ -227,6 +327,10 @@ function M.create (consts, empty, soundEffects, walls, background) -- dimensions
   end
   
   map.up = coroutine.wrap(up)
+  
+  
+  
+  map.fantasma = {}
   
   reinicia(map)
   return map
