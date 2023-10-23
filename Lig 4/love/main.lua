@@ -30,8 +30,18 @@ local tempoBomba = 3
 local duracaoFogo = 1
 local maxPontos = 3
 
-local function mqttcb (msg)
-  print(msg)
+local meuid="LIG4_LOVE"
+local broker="broker.hivemq.com"
+
+function mysplit(inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
 end
 
 function love.load()
@@ -60,10 +70,25 @@ function love.load()
   
   love.graphics.setBackgroundColor(255,255,255)
   
-  mqtt_client = mqtt.client.create("139.82.100.100", 7981, mqttcb)
+  local function mqttcb (topic,msg)
+    tmsg = mysplit(msg,",")
+    
+    if tmsg[2]=="MOV" then
+        local x = tonumber(tmsg[3])
+        M:movPiece(x)
+    elseif tmsg[2]=="OK" then
+        local x = tonumber(tmsg[3])
+        M:movPiece(x)
+        M:dropPiece()
+    end
+  end
+  
+  mqtt_client = mqtt.client.create(broker, 1883, mqttcb)
+  
   -- Trocar XX pelo ID da etiqueta do seu NodeMCU
-  mqtt_client:connect("cliente love A04")
-  mqtt_client:subscribe({"paraloveA04"})
+  mqtt_client:connect("cliente love A01")
+  mqtt_client:subscribe({"INF1350_LIG4"})
+  
   
 end
   --***************************Criação dos avatares*********************************************
@@ -71,6 +96,7 @@ end
 
 
 function love.update(dt)  
+  mqtt_client:handler()
   
   if estado == "jogo" then
   

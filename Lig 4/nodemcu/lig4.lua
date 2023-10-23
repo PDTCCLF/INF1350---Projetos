@@ -10,10 +10,8 @@ local meusleds = {led1, led2}
 
 local meuid = "LIG4_A01"
 local topic = "INF1350_LIG4"
-
+local broker="broker.hivemq.com"
 local estado = "inicio"
-
-
 
 local m
 
@@ -317,7 +315,7 @@ function conecta_cliente()
         node.restart()
         end)
     
-    m:connect("broker.hivemq.com", 1883, 0, conexao_sucesso, conexao_falha)
+    m:connect(broker, 1883, 0, conexao_sucesso, conexao_falha)
 end
 
 

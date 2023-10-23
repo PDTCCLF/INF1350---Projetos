@@ -5,7 +5,9 @@ from paho.mqtt import client as mqtt_client
 
 port = 1883
 broker = "broker.hivemq.com"
-topic = "INF1350_LIG4"
+broker = "10.201.254.86"
+topic = "paralove01"
+
 # Generate a Client ID with the subscribe prefix.
 client_id = f'subscribe-{random.randint(0, 100)}'
 # username = 'emqx'

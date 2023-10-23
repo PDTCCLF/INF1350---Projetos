@@ -187,6 +187,20 @@ local function rightPiece(map)
   end
 end
 
+local function movPiece(map,x)
+  local i=1
+  local j
+  local peca
+  for j = 1, map.nx do
+    if map.hidden[i][j] ~= 0 then
+      peca = map.hidden[i][j]
+      map.hidden[i][j] = 0
+      break
+    end
+  end
+  map.hidden[i][x] = peca
+end
+
 local function dropPiece(map)
   local i=1
   local j
@@ -318,6 +332,7 @@ function M.create (consts, empty, soundEffects, walls, background) -- dimensions
   map.dropPiece = dropPiece
   map.leftPiece = leftPiece
   map.rightPiece = rightPiece
+  map.movPiece = movPiece
   
   local function up()
     while true do
