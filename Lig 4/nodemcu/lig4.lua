@@ -108,6 +108,16 @@ local function verifica()
                      end
                      if pt == 4 then return peca end
                  end
+
+                 if i > 3 and j > 3 then
+                    pt = 1
+                    for k=1,3 do
+                        if matriz[i-k][j-k] == peca then
+                            pt = pt + 1
+                        end
+                     end
+                     if pt == 4 then return peca end
+                 end
             end
         end 
     end
@@ -190,14 +200,16 @@ local maquina = {
                 print("OK")
                 imprimeMatriz()
 
-                if verifica() == 1 then
-                    print("VOCE VENCEU!")
-                end
-                
-                
                 msg = meuid..",OK,"..x
                 m:publish(topic,msg,0,0, function(client) print(msg) end)
                 estado = "jogo2"
+
+                if verifica() == 1 then
+                    print("VOCE VENCEU!")
+                    gpio.write(led1, gpio.HIGH);
+                    gpio.write(led2, gpio.HIGH);
+                    estado="final"
+                end
             else
                 print("Jogada invalida")
             end
@@ -220,9 +232,9 @@ local maquina = {
     jogo2 = {
         botao4=function(l,t)
             print("OK")
-            gpio.write(led1, gpio.LOW);
-            gpio.write(led2, gpio.HIGH);
-            estado = "jogo1"
+            --gpio.write(led1, gpio.LOW);
+            --gpio.write(led2, gpio.HIGH);
+            --estado = "jogo1"
             end,
         message=function(client,topic,message)
             tmsg = mysplit(message,",")
@@ -233,14 +245,18 @@ local maquina = {
                 x = tonumber(tmsg[3])
                 dropPiece(2)
                 imprimeMatriz()
-
-                if verifica() == 2 then
-                    print("VOCE PERDEU!")
-                end
+                
                 gpio.write(led1, gpio.LOW);
                 gpio.write(led2, gpio.HIGH);
                 
                 estado = "jogo1"
+
+                if verifica() == 2 then
+                    print("VOCE PERDEU!")
+                    gpio.write(led1, gpio.HIGH);
+                    gpio.write(led2, gpio.HIGH);
+                    estado="final"
+                end
                 
             end
             end
