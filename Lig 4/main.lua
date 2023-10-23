@@ -1,6 +1,6 @@
 --Aluno: Jerônimo Augusto Soares
 --Aluno: Paulo de Tarso Fernandes
-
+local mqtt = require("mqtt_library")
 local map = require "map"
 
 local M
@@ -30,6 +30,9 @@ local tempoBomba = 3
 local duracaoFogo = 1
 local maxPontos = 3
 
+local function mqttcb (msg)
+  print(msg)
+end
 
 function love.load()
   love.window.setMode(D,D*ny/nx,{resizable = true})
@@ -56,6 +59,11 @@ function love.load()
   consts.M = M
   
   love.graphics.setBackgroundColor(255,255,255)
+  
+  mqtt_client = mqtt.client.create("139.82.100.100", 7981, mqttcb)
+  -- Trocar XX pelo ID da etiqueta do seu NodeMCU
+  mqtt_client:connect("cliente love A04")
+  mqtt_client:subscribe({"paraloveA04"})
   
 end
   --***************************Criação dos avatares*********************************************
@@ -88,7 +96,7 @@ function love.keypressed(key)
   elseif key == "right" then
     M:rightPiece()
   end
-    
+  --mqtt_client:publish("paranodeA04", i)
 end
 
 
