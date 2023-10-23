@@ -8,9 +8,12 @@ local led1 = 0
 local led2 = 6
 local meusleds = {led1, led2}
 
+-- Trocar meuid em um dos jogadores
 local meuid = "LIG4_A01"
 local topic = "INF1350_LIG4"
-local broker="broker.hivemq.com"
+--local broker="broker.hivemq.com"
+local broker="192.168.20.104"
+local port = 1883
 local estado = "inicio"
 
 local m
@@ -41,6 +44,7 @@ for i=1,6 do
         matriz[i][j] = 0
     end 
 end
+
 
 local function imprimeMatriz()
     local txt = ""
@@ -121,142 +125,119 @@ local function verifica()
     end
 
     return 0
-
-    
 end
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 local maquina = {
     inicio = {
         botao1=function(l,t)
-            print("Botao 1 pressionado")
+                print("Botao 1 pressionado")
             end,
         botao2=function(l,t)
-            print("Botao 2 pressionado")
+                print("Botao 2 pressionado")
             end,
         botao3=function(l,t)
-            print("Botao 3 pressionado")
+                print("Botao 3 pressionado")
             end,
         botao4=function(l,t)
-            print("Botao 4 pressionado")
-            gpio.write(led1, gpio.LOW);
-            gpio.write(led2, gpio.LOW);
-            estado = "conectando"
-            conecta_cliente()
+                print("Botao 4 pressionado")
+                gpio.write(led1, gpio.LOW);
+                gpio.write(led2, gpio.LOW);
+                estado = "conectando"
+                conecta_cliente()
             end
     },
     conectando = {
         subscribe=function(client)
-            print("Conectado")
-            print("Inscrito")
-            gpio.write(led1, gpio.LOW);
-            gpio.write(led2, gpio.HIGH);
-            estado="jogo1"
-            
-            msg = meuid..",SUB"
-            m:publish(topic,msg,0,0, function(client) print(msg) end)
+                print("Conectado")
+                print("Inscrito")
+                gpio.write(led1, gpio.LOW);
+                gpio.write(led2, gpio.HIGH);
+                estado="jogo1"
+                
+                msg = meuid..",SUB"
+                m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         confail=function(client)
-            gpio.write(led1, gpio.HIGH);
-            gpio.write(led2, gpio.LOW);
-            estado="inicio"
+                gpio.write(led1, gpio.HIGH);
+                gpio.write(led2, gpio.LOW);
+                estado="inicio"
             end
     },
     
     jogo1 = {
         botao1=function(l,t)
-            print("<-<-<")
-            x = (x-2)%7+1
-            print("x="..x)
-            msg = meuid..",MOV,"..x
-            m:publish(topic,msg,0,0, function(client) print(msg) end)
+                print("<-<-<")
+                x = (x-2)%7+1
+                print("x="..x)
+                msg = meuid..",MOV,"..x
+                m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         botao2=function(l,t)
-            print(">->->")
-            x = (x)%7+1
-            print("x="..x)
-            msg = meuid..",MOV,"..x
-            m:publish(topic,msg,0,0, function(client) print(msg) end)
+                print(">->->")
+                x = (x)%7+1
+                print("x="..x)
+                msg = meuid..",MOV,"..x
+                m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         botao4=function(l,t)
-            gpio.write(led1, gpio.HIGH);
-            gpio.write(led2, gpio.LOW);
-            if dropPiece(1) then
-                print("OK")
-                imprimeMatriz()
-
-                msg = meuid..",OK,"..x
-                m:publish(topic,msg,0,0, function(client) print(msg) end)
-                estado = "jogo2"
-
-                if verifica() == 1 then
-                    print("VOCE VENCEU!")
-                    gpio.write(led1, gpio.HIGH);
-                    gpio.write(led2, gpio.HIGH);
-                    estado="final"
+                gpio.write(led1, gpio.HIGH);
+                gpio.write(led2, gpio.LOW);
+                if dropPiece(1) then
+                    print("OK")
+                    imprimeMatriz()
+    
+                    msg = meuid..",OK,"..x
+                    m:publish(topic,msg,0,0, function(client) print(msg) end)
+                    estado = "jogo2"
+    
+                    if verifica() == 1 then
+                        print("VOCE VENCEU!")
+                        gpio.write(led1, gpio.HIGH);
+                        gpio.write(led2, gpio.HIGH);
+                        estado="final"
+                    end
+                else
+                    print("Jogada invalida")
                 end
-            else
-                print("Jogada invalida")
-            end
             end,
             
         message=function(client,topic,message)
-            tmsg = mysplit(message,",")
-            if tmsg[1]==meuid then
-                return
-            elseif tmsg[2]=="SUB" then
-                msg = meuid..",JOG"
-                m:publish(topic,msg,0,0, function(client) print(msg) end)
-            elseif tmsg[2]=="JOG" then
-                gpio.write(led1, gpio.HIGH);
-                gpio.write(led2, gpio.LOW);
-                estado="jogo2"
-            end
+                tmsg = mysplit(message,",")
+                if tmsg[1]==meuid then
+                    return
+                elseif tmsg[2]=="SUB" then
+                    msg = meuid..",JOG"
+                    m:publish(topic,msg,0,0, function(client) print(msg) end)
+                elseif tmsg[2]=="JOG" then
+                    gpio.write(led1, gpio.HIGH);
+                    gpio.write(led2, gpio.LOW);
+                    estado="jogo2"
+                end
             end
     },
     jogo2 = {
-        botao4=function(l,t)
-            print("OK")
-            --gpio.write(led1, gpio.LOW);
-            --gpio.write(led2, gpio.HIGH);
-            --estado = "jogo1"
-            end,
         message=function(client,topic,message)
-            tmsg = mysplit(message,",")
-            if tmsg[1]==meuid then
-                return
-            elseif tmsg[2]=="OK" then
-                print(message)
-                x = tonumber(tmsg[3])
-                dropPiece(2)
-                imprimeMatriz()
-                
-                gpio.write(led1, gpio.LOW);
-                gpio.write(led2, gpio.HIGH);
-                
-                estado = "jogo1"
-
-                if verifica() == 2 then
-                    print("VOCE PERDEU!")
-                    gpio.write(led1, gpio.HIGH);
+                tmsg = mysplit(message,",")
+                if tmsg[1]==meuid then
+                    return
+                elseif tmsg[2]=="OK" then
+                    print(message)
+                    x = tonumber(tmsg[3])
+                    dropPiece(2)
+                    imprimeMatriz()
+                    gpio.write(led1, gpio.LOW);
                     gpio.write(led2, gpio.HIGH);
-                    estado="final"
+                    estado = "jogo1"
+    
+                    if verifica() == 2 then
+                        print("VOCE PERDEU!")
+                        gpio.write(led1, gpio.HIGH);
+                        gpio.write(led2, gpio.HIGH);
+                        estado="final"
+                    end
                 end
-                
-            end
             end
     }
     
@@ -276,8 +257,6 @@ for i, botaoi in ipairs (meusbotoes) do
             if f ~= nil then
                 f(l,t)
             end
-            
-            --print("Botao "..i.." pressionado")
         end)
 end
 
@@ -305,20 +284,16 @@ function conecta_cliente()
     end
     
     m:on("message",function(client,topic,message)
-        f = maquina[estado] and maquina[estado]["message"]
-            if f ~= nil then
-                f(client,topic,message)
-            end
+            f = maquina[estado] and maquina[estado]["message"]
+                if f ~= nil then
+                    f(client,topic,message)
+                end
         end)
 
     m:on("offline",function(client)
-        node.restart()
+            node.restart()
         end)
     
-    m:connect(broker, 1883, 0, conexao_sucesso, conexao_falha)
+    m:connect(broker, port, 0, conexao_sucesso, conexao_falha)
 end
-
-
-
-
 
