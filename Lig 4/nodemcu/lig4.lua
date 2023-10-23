@@ -157,6 +157,9 @@ local maquina = {
             gpio.write(led1, gpio.LOW);
             gpio.write(led2, gpio.HIGH);
             estado="jogo1"
+            
+            msg = meuid..",SUB"
+            m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         confail=function(client)
             gpio.write(led1, gpio.HIGH);
@@ -191,12 +194,26 @@ local maquina = {
                     print("VOCE VENCEU!")
                 end
                 
+                
                 msg = meuid..",OK,"..x
                 m:publish(topic,msg,0,0, function(client) print(msg) end)
-            
                 estado = "jogo2"
             else
                 print("Jogada invalida")
+            end
+            end,
+            
+        message=function(client,topic,message)
+            tmsg = mysplit(message,",")
+            if tmsg[1]==meuid then
+                return
+            elseif tmsg[2]=="SUB" then
+                msg = meuid..",JOG"
+                m:publish(topic,msg,0,0, function(client) print(msg) end)
+            elseif tmsg[2]=="JOG" then
+                gpio.write(led1, gpio.HIGH);
+                gpio.write(led2, gpio.LOW);
+                estado="jogo2"
             end
             end
     },
