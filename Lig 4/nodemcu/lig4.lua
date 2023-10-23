@@ -23,6 +23,70 @@ for _,ledi in ipairs (meusleds) do
 end
 
 
+function mysplit(inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
+
+local x = 1
+
+local matriz = {}
+for i=1,6 do
+    matriz[i] = {}
+    for j=1,7 do
+        matriz[i][j] = 0
+    end 
+end
+
+local function imprimeMatriz()
+    local txt = ""
+    for i=6,1,-1 do
+        txt=txt.."\n"
+        for j=1,7 do
+            txt=txt..matriz[i][j].." "
+        end 
+    end
+    print(txt)
+end
+
+
+local function dropPiece(peca)
+    if matriz[6][x] ~= 0 then
+        return false
+    elseif matriz[1][x] == 0 then
+        matriz[1][x] = peca
+        return true
+    end
+    for i=5,1,-1 do
+        if matriz[i][x] ~= 0 then
+            matriz[i+1][x] = peca
+            break
+        end
+    end
+    return true
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local maquina = {
     inicio = {
         botao1=function(l,t)
@@ -59,18 +123,32 @@ local maquina = {
     
     jogo1 = {
         botao1=function(l,t)
-            msg="<-<-<"
+            print("<-<-<")
+            x = (x-2)%7+1
+            print("x="..x)
+            msg = meuid..",MOV,"..x
             m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         botao2=function(l,t)
-            msg=">->->"
+            print(">->->")
+            x = (x)%7+1
+            print("x="..x)
+            msg = meuid..",MOV,"..x
             m:publish(topic,msg,0,0, function(client) print(msg) end)
             end,
         botao4=function(l,t)
-            print("OK")
             gpio.write(led1, gpio.HIGH);
             gpio.write(led2, gpio.LOW);
-            estado = "jogo2"
+            if dropPiece(1) then
+                print("OK")
+                imprimeMatriz()
+                msg = meuid..",OK,"..x
+                m:publish(topic,msg,0,0, function(client) print(msg) end)
+            
+                estado = "jogo2"
+            else
+                print("Jogada invalida")
+            end
             end
     },
     jogo2 = {
@@ -81,7 +159,21 @@ local maquina = {
             estado = "jogo1"
             end,
         message=function(client,topic,message)
-            print(message)
+            tmsg = mysplit(message,",")
+            if tmsg[1]==meuid then
+                return
+            elseif tmsg[2]=="OK" then
+                print(message)
+                x = tonumber(tmsg[3])
+                dropPiece(2)
+                imprimeMatriz()
+                
+                gpio.write(led1, gpio.LOW);
+                gpio.write(led2, gpio.HIGH);
+                
+                estado = "jogo1"
+                
+            end
             end
     }
     
@@ -111,8 +203,7 @@ end
 function conecta_cliente()
     print("Conectando cliente")
     m = mqtt.Client("INF1350_"..meuid, 120)
-    --m:on("offline",offline)
-
+    
     local function conexao_sucesso(client)
         print("Connected to MQTT broker")
         client:subscribe(topic, 0, function (client)
@@ -131,10 +222,14 @@ function conecta_cliente()
     end
     
     m:on("message",function(client,topic,message)
-        f = maquina[estado] and maquina[estado]["menssage"]
+        f = maquina[estado] and maquina[estado]["message"]
             if f ~= nil then
                 f(client,topic,message)
             end
+        end)
+
+    m:on("offline",function(client)
+        node.restart()
         end)
     
     m:connect("broker.hivemq.com", 1883, 0, conexao_sucesso, conexao_falha)
