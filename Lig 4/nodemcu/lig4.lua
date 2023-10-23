@@ -1,3 +1,5 @@
+--Aluno: Jerônimo Augusto Soares
+--Aluno: Paulo de Tarso Fernandes
 local botao1 = 3
 local botao2 = 4
 local botao3 = 5
