@@ -1,4 +1,10 @@
 #include "/home/terra/TerraNG/terra/TerraNet.defs"
+//#define TRUE 1
+//#define FALSE 0
+#define FINDPAI 2
+#define OFFERPAI 3
+
+
 
 var ushort nodeId = getNodeId();
 pktype usrMsg from radioMsg with
@@ -7,10 +13,109 @@ pktype usrMsg from radioMsg with
 	var ulong[2]  d32;
 end
 
+
+
+var ubyte orfao = TRUE;
+var ubyte stat;
+
+var usrMsg sndDataFindPai;
+sndDataFindPai.type = FINDPAI;
+sndDataFindPai.target = BROADCAST;
+sndDataFindPai.source = nodeId;
+
+var usrMsg sndDataOfferPai;
+sndDataOfferPai.type = OFFERPAI;
+sndDataOfferPai.target = BROADCAST;
+sndDataOfferPai.source = nodeId;
+
 var usrMsg sndData;
-var usrMsg recData;
-var ushort idPai = 1; 
+sndData.source = nodeId;
 sndData.type=1;
+
+var usrMsg tempData;
+tempData.source = nodeId;
+tempData.type=1;
+
+var usrMsg recData1;
+var usrMsg recData2;
+var usrMsg recData3;
+
+var ushort idPai = 1;
+var ubyte sndAck;
+
+
+//sndData.d16[0] = idPai;
+
+if nodeId == 11 then
+	orfao = FALSE;
+end
+
+//sndData.target = BROADCAST;
+
+par do
+	loop do
+		if orfao == TRUE then
+			emit SEND(sndDataFindPai);
+			await SEND_DONE;
+			await (10)s;
+		else
+			emit REQ_TEMP();
+			tempData.d16[0] = await TEMP;
+			tempData.target = idPai;
+			tempData.d16[1] = idPai;
+			stat = qPut(tempData);
+			inc tempData.d8[0];
+			
+			await (10)s;
+		end
+	end
+with
+	loop do
+		if qSize() != 0 then
+			stat = qGet(sndData);
+			
+			emit SEND_ACK(sndData);
+			sndAck = await SEND_DONE_ACK;
+			if sndAck == FALSE then
+				qPut(sndData);
+			end
+		else
+			await Q_READY;
+		end
+	end
+with
+	loop do
+		recData1 = await RECEIVE(FINDPAI);
+		if orfao == FALSE then
+			sndDataOfferPai.target = recData1.source;
+			stat = qPut(sndDataOfferPai);
+			//emit SEND(sndDataOfferPai);
+			//await SEND_DONE;
+		end
+	end
+with
+	loop do
+		recData2 = await RECEIVE(OFFERPAI);
+		if orfao == TRUE then
+			idPai = recData2.source;
+			orfao = FALSE;
+		end
+	end
+with
+	loop do
+		recData3 = await RECEIVE(1);
+		recData3.target = idPai;
+		stat = qPut(recData3);
+		emit LEDS(recData3.d8[0]);
+	end
+end
+
+emit LEDS(ON);
+
+
+
+await (500)s;
+
 
 //sndData.target = BROADCAST;
 
@@ -19,10 +124,10 @@ sndData.target = nodeId-1;
 if nodeId == 11 then
 sndData.target = 1;
 end
-//*/
+//
 
-sndData.source = nodeId;
-sndData.d32[0] = 0;
+
+
 
 if nodeId != 11 then
 	recData = await RECEIVE;
@@ -61,3 +166,4 @@ with
 end
 emit LED0(ON);
 //end
+*/
