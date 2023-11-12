@@ -1,4 +1,0 @@
-#include "/home/terra/TerraNG/terra/TerraNet.defs"
-
-emit LEDS(0);
-

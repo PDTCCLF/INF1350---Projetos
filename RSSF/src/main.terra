@@ -1,19 +1,15 @@
 #include "/home/terra/TerraNG/terra/TerraNet.defs"
-//#define TRUE 1
-//#define FALSE 0
 #define FINDPAI 2
 #define OFFERPAI 3
 
 
-
 var ushort nodeId = getNodeId();
+
 pktype usrMsg from radioMsg with
 	var ubyte[4]  d8;
 	var ushort[4] d16;
 	var ulong[2]  d32;
 end
-
-
 
 var ubyte orfao = TRUE;
 var ubyte stat;
@@ -42,16 +38,13 @@ var usrMsg recData2;
 var usrMsg recData3;
 
 var ushort idPai = 1;
+
 var ubyte sndAck;
-
-
-//sndData.d16[0] = idPai;
 
 if nodeId == 11 then
 	orfao = FALSE;
 end
 
-//sndData.target = BROADCAST;
 
 par do
 	loop do
@@ -59,25 +52,21 @@ par do
 			await (random()%500)ms;
 			emit SEND(sndDataFindPai);
 			await SEND_DONE;
-			await (10)s;
+			await (5)s;
 		else
 			emit REQ_TEMP();
 			tempData.d16[0] = await TEMP;
 			tempData.target = idPai;
 			tempData.d16[1] = idPai;
-			//tempData.d16[2] = random();
-			//tempData.d16[3] = 654;
 			stat = qPut(tempData);
-			inc tempData.d8[0];
-			
-			await (10)s;
+			inc tempData.d8[0];			
+			await (30)s;
 		end
 	end
 with
 	loop do
 		if qSize() != 0 then
 			stat = qGet(sndData);
-			
 			await (random()%500)ms;
 			emit SEND_ACK(sndData);
 			sndAck = await SEND_DONE_ACK;
@@ -94,8 +83,6 @@ with
 		if orfao == FALSE then
 			sndDataOfferPai.target = recData1.source;
 			stat = qPut(sndDataOfferPai);
-			//emit SEND(sndDataOfferPai);
-			//await SEND_DONE;
 		end
 	end
 with
@@ -114,61 +101,3 @@ with
 		emit LEDS(recData3.d8[0]);
 	end
 end
-
-emit LEDS(ON);
-
-
-
-await (500)s;
-
-
-//sndData.target = BROADCAST;
-
-/*
-sndData.target = nodeId-1;
-if nodeId == 11 then
-sndData.target = 1;
-end
-//
-
-
-
-
-if nodeId != 11 then
-	recData = await RECEIVE;
-	idPai = recData.source;
-end
-
-sndData.target = BROADCAST;
-
-await (nodeId-10)s;
-emit SEND(sndData);
-await SEND_DONE;
-
-sndData.target = idPai;
-sndData.d16[1] = idPai;
-
-//if nodeId == 11 then
-par do
-	loop do
-		emit REQ_TEMP();
-		sndData.d16[0] = await TEMP;
-		emit SEND(sndData);
-		await SEND_DONE;
-		inc sndData.d8[0];
-		await (10)s;
-	end
-with
-	loop do
-		recData = await RECEIVE;
-		if recData.target != BROADCAST then
-			recData.target = sndData.target;
-			emit SEND(recData);
-			await SEND_DONE;
-			emit LEDS(recData.d8[0]);
-		end
-	end
-end
-emit LED0(ON);
-//end
-*/
