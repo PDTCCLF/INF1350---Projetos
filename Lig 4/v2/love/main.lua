@@ -14,8 +14,8 @@ local tamFont = D/15
 local FPS = 60
 
 local meuid="LIG4_LOVE"
---local broker="broker.hivemq.com"
-local broker="192.168.20.104"
+local broker="broker.hivemq.com"
+--local broker="192.168.20.104"
 
 
 function mysplit(inputstr, sep)

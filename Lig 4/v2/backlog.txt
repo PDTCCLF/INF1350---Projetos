@@ -1,0 +1,10 @@
+
+
+
+Debounce dos botões
+Sons do buzzer
+Configurar broker mosquitto local
+
+sons de sala
+Espectador LÖVE
+
