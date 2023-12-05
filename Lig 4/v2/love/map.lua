@@ -125,7 +125,7 @@ local draw = function(map)
   local f = map.fantasma
   
   love.graphics.push()
-  love.graphics.translate((w-D)/2,(h-D*ny/nx)/2)
+  love.graphics.translate((w-D)/2,(h-D*ny/nx)/2+D/ny/2)
   love.graphics.scale(D/nx,D/nx)
   
   if f.peca == 1 then

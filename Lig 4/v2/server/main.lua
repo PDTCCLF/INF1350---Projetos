@@ -5,10 +5,11 @@
 local mqtt = require("mqtt_library")
 
 local config = dofile("config.lua")
-
-
 local meuid=config.meuid
 local broker=config.broker
+local port=config.port
+local topic=config.topic
+
 local mqtt_client
 local coTimer
 
@@ -109,10 +110,10 @@ local function mqttcb(topic, msg)
     -- end
 end
 
-mqtt_client = mqtt.client.create(broker, 1883, mqttcb)
+mqtt_client = mqtt.client.create(broker, port, mqttcb)
 
 mqtt_client:connect("INF1350_"..meuid)
-mqtt_client:subscribe({ "INF1350_LIG4" })
+mqtt_client:subscribe({ topic })
 
 
 print("Inscrito")
