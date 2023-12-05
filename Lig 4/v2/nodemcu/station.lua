@@ -2,7 +2,7 @@
 
 local cred = dofile('credenciais.lua')
 
-wificonf = {
+local wificonf = {
     -- verificar ssid e senha
     ssid = cred.ssid,
     pwd = cred.pwd,

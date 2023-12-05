@@ -1,9 +1,7 @@
 local function criaMaquina(consts)
   local led1 = consts.led1
-  local led2 =consts.led2
+  local led2 = consts.led2
   local mysplit = consts.mysplit
-  local imprimeMatriz = consts.imprimeMatriz
-  local dropPiece = consts.dropPiece
   local matriz = consts.matriz
   local topic = consts.topic
   local meuid = consts.meuid
@@ -87,13 +85,13 @@ local function criaMaquina(consts)
         if tmsg[1] == meuid then
           return
         elseif tmsg[2] == meuid then
-          if tmsg[4]=="JOG1" then
-            consts.sala=tmsg[3]
+          if tmsg[4] == "JOG1" then
+            consts.sala = tmsg[3]
             consts.estado = "jogo1"
-          elseif tmsg[4]=="JOG2" then
-            consts.sala=tmsg[3]
+          elseif tmsg[4] == "JOG2" then
+            consts.sala = tmsg[3]
             consts.estado = "jogo2"
-          elseif tmsg[4]=="NEG" then
+          elseif tmsg[4] == "NEG" then
             consts.estado = "espera"
           end
           print("Mensagem '" .. message .. "' recebida")
@@ -118,15 +116,15 @@ local function criaMaquina(consts)
       botao4 = function(l, t)
         gpio.write(led1, gpio.HIGH);
         gpio.write(led2, gpio.LOW);
-        if dropPiece(1) then
+        if matriz.dropPiece(1, consts.x) then
           print("OK")
-          imprimeMatriz()
+          matriz.imprime()
 
           msg = meuid .. ",OK," .. consts.x
           consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
           consts.estado = "jogo2"
-          local verifica = dofile("verifica.lua")
-          if verifica(matriz) == 1 then
+          -- local verifica = dofile("verifica.lua")
+          if matriz.verifica() == 1 then
             print("VOCE VENCEU!")
             gpio.write(led1, gpio.HIGH);
             gpio.write(led2, gpio.HIGH);
@@ -158,13 +156,14 @@ local function criaMaquina(consts)
         elseif tmsg[2] == "OK" then
           print(message)
           consts.x = tonumber(tmsg[3])
-          dropPiece(2)
-          imprimeMatriz()
+          matriz.dropPiece(2, consts.x)
+          matriz.imprime()
           gpio.write(led1, gpio.LOW);
           gpio.write(led2, gpio.HIGH);
           consts.estado = "jogo1"
-          local verifica = dofile("verifica.lua")
-          if verifica(matriz) == 2 then
+
+          -- local verifica = dofile("verifica.lua")
+          if matriz.verifica() == 2 then
             print("VOCE PERDEU!")
             gpio.write(led1, gpio.HIGH);
             gpio.write(led2, gpio.HIGH);
@@ -177,7 +176,5 @@ local function criaMaquina(consts)
   }
   return maquina
 end
-
-
 
 return { criaMaquina = criaMaquina }

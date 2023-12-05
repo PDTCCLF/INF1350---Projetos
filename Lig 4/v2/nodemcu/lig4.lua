@@ -16,14 +16,6 @@ for _, ledi in ipairs(meusleds) do
   gpio.write(ledi, gpio.HIGH);
 end
 
-local matriz = {}
-for i = 1, 6 do
-  matriz[i] = {}
-  for j = 1, 7 do
-    matriz[i][j] = 0
-  end
-end
-
 function mysplit(inputstr, sep)
   if sep == nil then
     sep = "%s"
@@ -35,35 +27,10 @@ function mysplit(inputstr, sep)
   return t
 end
 
-local function imprimeMatriz()
-  local txt = ""
-  for i = 6, 1, -1 do
-    txt = txt .. "\n"
-    for j = 1, 7 do
-      txt = txt .. matriz[i][j] .. " "
-    end
-  end
-  print(txt)
-end
-
-
-local function dropPiece(peca)
-  if matriz[6][x] ~= 0 then
-    return false
-  elseif matriz[1][x] == 0 then
-    matriz[1][x] = peca
-    return true
-  end
-  for i = 5, 1, -1 do
-    if matriz[i][x] ~= 0 then
-      matriz[i + 1][x] = peca
-      break
-    end
-  end
-  return true
-end
 
 local config = dofile("config.lua")
+print("meuid: "..config.meuid)
+local matriz = dofile("matriz.lua")
 
 local consts = {
   led1 = led1,
@@ -72,8 +39,6 @@ local consts = {
   estado = "inicio",
   x = 1,
   mysplit = mysplit,
-  imprimeMatriz = imprimeMatriz,
-  dropPiece = dropPiece,
   meuid = config.meuid,
   topic = config.topic
 }
