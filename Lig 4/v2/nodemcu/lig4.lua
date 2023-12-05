@@ -11,12 +11,10 @@ local led1 = 0
 local led2 = 6
 local meusleds = { led1, led2 }
 
--- Trocar meuid em um dos jogadores
-local meuid = "LIG4_A01"
-local topic = "INF1350_LIG4"
-local broker = "broker.hivemq.com"
-local port = 1883
-
+for _, ledi in ipairs(meusleds) do
+  gpio.mode(ledi, gpio.OUTPUT)
+  gpio.write(ledi, gpio.HIGH);
+end
 
 local matriz = {}
 for i = 1, 6 do
@@ -36,7 +34,6 @@ function mysplit(inputstr, sep)
   end
   return t
 end
-
 
 local function imprimeMatriz()
   local txt = ""
@@ -66,30 +63,20 @@ local function dropPiece(peca)
   return true
 end
 
+local config = dofile("config.lua")
 
-local consts={
-  led1=led1,
-  led2=led2,
-  matriz=matriz,
-  estado="inicio",
-  x=1,
-  mysplit=mysplit,
-  imprimeMatriz=imprimeMatriz,
-  dropPiece=dropPiece,
-  meuid=meuid,
-  topic=topic
+local consts = {
+  led1 = led1,
+  led2 = led2,
+  matriz = matriz,
+  estado = "inicio",
+  x = 1,
+  mysplit = mysplit,
+  imprimeMatriz = imprimeMatriz,
+  dropPiece = dropPiece,
+  meuid = config.meuid,
+  topic = config.topic
 }
-
-
-for _, ledi in ipairs(meusleds) do
-  gpio.mode(ledi, gpio.OUTPUT)
-  gpio.write(ledi, gpio.HIGH);
-end
-
-
-
-
-
 
 local maquina = dofile("maquina.lua").criaMaquina(consts)
 
@@ -110,15 +97,14 @@ for i, botaoi in ipairs(meusbotoes) do
 end
 
 
-
 function conecta_cliente()
   print("Conectando cliente")
-  
-  consts.m = mqtt.Client("INF1350_" .. meuid, 120)
+
+  consts.m = mqtt.Client("INF1350_" .. config.meuid, 120)
 
   local function conexao_sucesso(client)
     print("Connected to MQTT broker")
-    client:subscribe(topic, 0, function(client)
+    client:subscribe(config.topic, 0, function(client)
       f = maquina[consts.estado] and maquina[consts.estado]["subscribe"]
       if f ~= nil then
         f(client)
@@ -144,5 +130,5 @@ function conecta_cliente()
     node.restart()
   end)
 
-  consts.m:connect(broker, port, 0, conexao_sucesso, conexao_falha)
+  consts.m:connect(config.broker, config.port, 0, conexao_sucesso, conexao_falha)
 end
