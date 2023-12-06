@@ -7,14 +7,31 @@
     valor:
 }
 
+Enviados pelo LÖVE2D:
+love_id,BROADCAST,NIL,ALL
+love_id,BROADCAST,salax,GET
+
 Enviados pelo NodeMCU:
-NODE_ID,BROADCAST,NIL
-NODE_ID,BROADCAST,SALAX,SUB
-NODE_ID,NIL,SALA,MOV,VALOR
-NODE_ID,NIL,SALA,OK,VALOR
+node_id,BROADCAST,NIL
+node_id,BROADCAST,salax,SUB
+node_id,BROADCAST,salax,MOV,valor
+node_id,BROADCAST,salax,OK,valor
 
 Enviados pelo servidor:
-SERVER_ID,NODE_ID,SALA1;SALA2;...
-SERVER_ID,NODE_ID,SALAX,JOG1
-SERVER_ID,NODE_ID,SALAX,JOG2
-SERVER_ID,NODE_ID,SALAX,NEG
+server_id,node_id,sala1;sala2;...
+server_id,node_id,salax,JOG1
+server_id,node_id,salax,JOG2
+server_id,node_id,salax,NEG
+server_id,love_id,sala1;sala2;...
+server_id,love_id,salax,MATRIZ,0102...,valor
+server_id,OBS,salax,QTDJOG,valor
+server_id,OBS,salax,MOV,valor
+server_id,OBS,salax,OK,valor
+
+
+server_id,OBS,salax,MATRIZ,0102...
+love_id,BROADCAST,salax,OBS
+server_id,love_id,salax,OBSJOG,valor
+server_id,love_id,salax,OBSMATRIZ,0102...
+server_id,love_id,salax,OBSMOV,valor
+server_id,love_id,salax,OBSOK,valor
