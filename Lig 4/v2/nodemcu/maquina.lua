@@ -1,3 +1,4 @@
+local beep = dofile("beep.lua")
 local function criaMaquina(consts)
   local led1 = consts.led1
   local led2 = consts.led2
@@ -63,6 +64,7 @@ local function criaMaquina(consts)
           consts.x = consts.x - 1
           print("x=" .. consts.x)
           print("sala=" .. (salas[consts.x] or "nil"))
+          beep(200*string.byte(salas[consts.x]),1000)
         end
       end,
       botao2 = function(l, t)
@@ -70,6 +72,7 @@ local function criaMaquina(consts)
           consts.x = consts.x + 1
           print("x=" .. consts.x)
           print("sala=" .. (salas[consts.x] or "nil"))
+          beep(200*string.byte(salas[consts.x]),1000)
         end
       end,
       botao4 = function(l, t)
