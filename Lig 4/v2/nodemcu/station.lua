@@ -15,7 +15,7 @@ local wificonf = {
             gpio.mode(ledi, gpio.OUTPUT)
             gpio.write(ledi, gpio.HIGH);
         end
-        dofile('lig4.lua')
+        dofile('lig4.lc')
         -- esperar obter IP para
         -- qualquer comunicação!!!
         end,

@@ -1,6 +1,7 @@
 tmr.delay(1000 * 1000 * 5)
 
 print("INIT")
+
 local led1 = 0
 local led2 = 6
 local meusleds = { led1, led2 }

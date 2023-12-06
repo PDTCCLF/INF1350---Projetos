@@ -184,6 +184,17 @@ local reinicia = function(map)
   map.fantasma = {peca=0,r=squareSize / 2 - 0.1}
   
 end
+
+local function redefine(map,tableStrMap)
+  map:reinicia()
+  local k = 1
+  for i = map.ny,2,-1  do
+    for j = 1, map.nx do
+      map.hidden[i][j] = tonumber(tableStrMap[k]:sub(j,j))
+    end
+    k=k+1
+  end
+end
   
 
 function M.create (consts) -- dimensions must be odd numbers
@@ -199,6 +210,7 @@ function M.create (consts) -- dimensions must be odd numbers
   map.leftPiece = leftPiece
   map.rightPiece = rightPiece
   map.movPiece = movPiece
+  map.redefine = redefine
   
   local function up()
     while true do

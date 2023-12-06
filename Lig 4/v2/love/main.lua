@@ -9,10 +9,11 @@ local consts
 local tempoAcumulado = 0
 
 local nx, ny = 7, 8
-local D = 700
+local D = 600
 local tamFont = D / 20
 local FPS = 60
 local flag = false
+local carregando = true
 
 local config = dofile("config.lua")
 local meuid = config.meuid
@@ -33,6 +34,20 @@ function mysplit(inputstr, sep)
     return t
 end
 
+local matriz ={}
+
+local constsMaq = {
+    matriz = matriz,
+    estado = "listando",
+    -- estado = "temp",
+    mysplit = mysplit,
+    meuid = config.meuid,
+    topic = config.topic
+}
+local maquina = dofile("maquina.lua").criaMaquina(constsMaq)
+
+
+
 function love.load()
     love.window.setMode(D, D * ny / nx, { resizable = true })
     love.window.setTitle("Lig 4")
@@ -43,42 +58,77 @@ function love.load()
     consts = { ["D"] = D, ["nx"] = nx, ["ny"] = ny-1, ["r"] = r, ["FPS"] = FPS }
     M = map.create(consts)
     consts.M = M
+    constsMaq.map=M
 
     love.graphics.setBackgroundColor(255, 255, 255)
 
     --***************************Conexção com o mosquitto*********************************************
 
     local function mqttcb(topic, msg)
-        tmsg = mysplit(msg, ",")
-
-        if tmsg[2] == "MOV" then
-            local x = tonumber(tmsg[3])
-            M:movPiece(x)
-        elseif tmsg[2] == "OK" then
-            local x = tonumber(tmsg[3])
-            M:movPiece(x)
-            M:dropPiece()
+        local f = maquina[constsMaq.estado] and maquina[constsMaq.estado]["message"]
+        if f ~= nil then
+            -- constsMaq.botao:setTexto(msg)
+            f(topic, msg)
         end
+        -- tmsg = mysplit(msg, ",")
+
+        -- if tmsg[2] == "MOV" then
+        --     local x = tonumber(tmsg[3])
+        --     M:movPiece(x)
+        -- elseif tmsg[2] == "OK" then
+        --     local x = tonumber(tmsg[3])
+        --     M:movPiece(x)
+        --     M:dropPiece()
+        -- end
     end
 
+
+    local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+    local larg, alt = D*2/5, D/10
+
+    botao = cria_botao(w/2-larg/2,D/ny/2-alt/2,larg,alt)
+
+    constsMaq.botao=botao
+
+    larg, alt = D/5, D/ny
+    botaoEsq = cria_botao(w/2-D/2,D/ny/2-alt/2,larg,alt)
+    botaoDir = cria_botao(w/2+D/2-larg,D/ny/2-alt/2,larg,alt)
+
+    botao:setColor(1,0,1)
+    
+    botao:setCallback(function ()
+        flag = not flag
+    end)
+
+    -- botaoEsq:setColorFont(1,1,1)
+    botao:setTexto("Pressione")
+    botaoEsq:setTexto("<--")
+    botaoDir:setTexto("-->")
+
+
+    botaoEsq:setCallback(function ()
+        local f = maquina[constsMaq.estado] and maquina[constsMaq.estado]["botaoEsq"]
+        if f ~= nil then
+            f()
+        end
+    end)
+
+    botaoDir:setCallback(function ()
+        local f = maquina[constsMaq.estado] and maquina[constsMaq.estado]["botaoDir"]
+        if f ~= nil then
+            f()
+        end
+    end)
+
+    
     mqtt_client = mqtt.client.create(broker, port, mqttcb)
 
     mqtt_client:connect("INF1350_" .. meuid)
     mqtt_client:subscribe({ topic })
 
-
-    local w,h = love.graphics.getWidth(),love.graphics.getHeight()
-
-    botao = cria_botao(w/2-D/5,h/2-D/20,D*2/5,D*2/20)
-
-    botao:setColor(1,0,1)
-    botao:setCallback(function ()
-        flag = not flag
-    end)
-
-    botao:setTexto("Pressione")
-
-
+    constsMaq.client = mqtt_client
+    local msgSend = meuid..",BROADCAST,NIL,ALL"
+    mqtt_client:publish(topic,msgSend)
 
 end
 
@@ -106,16 +156,37 @@ end
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 then -- O número 1 corresponde ao botão esquerdo do mouse
         botao:clicked(x, y)
+        botaoEsq:clicked(x, y)
+        botaoDir:clicked(x, y)
         -- print("O botão esquerdo do mouse foi clicado na posição x = " .. x .. ", y = " .. y)
     end
 end
 
+
+local function drawStr(text, xc, yc)
+    local texto = "CARREGANDO..."
+        local fonte = love.graphics.getFont()
+        local larguraTexto = fonte:getWidth(text)
+        local alturaTexto = fonte:getHeight(text)
+        love.graphics.print(text, xc - larguraTexto/ 2, yc - alturaTexto / 2)
+end
+
 function love.draw()
-    --Desenho do mapa
+    if constsMaq.estado == jogo then
+        M:draw()
+    else
+        local w,h = love.graphics.getWidth(),love.graphics.getHeight()
+        love.graphics.setColor(0,0,0)
+        drawStr(constsMaq.estado,w/2,h/2)
+    end
     if flag then
         M:draw()
     end
+
+    --Desenho do mapa
     botao:draw()
+    botaoEsq:draw()
+    botaoDir:draw()
 end
 
 function love.resize(w, h)

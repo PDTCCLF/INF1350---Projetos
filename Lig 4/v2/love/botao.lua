@@ -5,12 +5,17 @@ local function cria_botao(x,y,larg,alt)
         alt=alt,
         larg=larg,
         cor={0,0,0},
+        corFonte={1,1,1},
         callback=nil,
         texto = ""
     }
 
     function botao:setColor(r, g, b)
         self.cor = {r, g, b}
+    end
+
+    function botao:setColorFont(r, g, b)
+        self.corFonte = {r, g, b}
     end
 
     function botao:setTexto(texto)
@@ -28,7 +33,7 @@ local function cria_botao(x,y,larg,alt)
         love.graphics.setColor(self.cor)
         love.graphics.rectangle("fill", self.x, self.y, self.larg, self.alt)
 
-        love.graphics.setColor(0, 0, 0)
+        love.graphics.setColor(self.corFonte)
         local fonte = love.graphics.getFont()
         local larguraTexto = fonte:getWidth(self.texto)
         local alturaTexto = fonte:getHeight(self.texto)

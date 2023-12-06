@@ -30,7 +30,7 @@ end
 
 local config = dofile("config.lua")
 print("meuid: "..config.meuid)
-local matriz = dofile("matriz.lua")
+local matriz = dofile("matriz.lc")
 
 local consts = {
   led1 = led1,
@@ -43,8 +43,10 @@ local consts = {
   topic = config.topic
 }
 
-local maquina = dofile("maquina.lua").criaMaquina(consts)
-
+print("lig4 46")
+print(node.heap())
+local maquina = dofile("maquina.lc").criaMaquina(consts)
+print("lig4 49")
 for i, botaoi in ipairs(meusbotoes) do
   gpio.mode(botaoi, gpio.INPUT)
   local level
