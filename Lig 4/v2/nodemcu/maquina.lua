@@ -1,4 +1,3 @@
-print("MAQUINA")
 local beep = dofile("beep.lua")
 local function criaMaquina(consts)
   local led1 = consts.led1

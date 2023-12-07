@@ -6,6 +6,7 @@ local botao2 = 4
 local botao3 = 5
 local botao4 = 8
 local meusbotoes = { botao1, botao2, botao3, botao4 }
+local tempoAnterior = tmr.now()
 
 local led1 = 0
 local led2 = 6
@@ -43,10 +44,8 @@ local consts = {
   topic = config.topic
 }
 
-print("lig4 46")
-print(node.heap())
 local maquina = dofile("maquina.lc").criaMaquina(consts)
-print("lig4 49")
+
 for i, botaoi in ipairs(meusbotoes) do
   gpio.mode(botaoi, gpio.INPUT)
   local level
@@ -56,6 +55,10 @@ for i, botaoi in ipairs(meusbotoes) do
     level = "down"
   end
   gpio.trig(botaoi, level, function(l, t)
+    if tmr.now() - tempoAnterior < 250*1000 then
+      return
+    end
+    tempoAnterior = tmr.now()
     f = maquina[consts.estado] and maquina[consts.estado]["botao" .. i]
     if f ~= nil then
       f(l, t)
