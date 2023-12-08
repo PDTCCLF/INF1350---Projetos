@@ -12,6 +12,7 @@ local topic = config.topic
 
 local mqtt_client
 local coTimer
+local timeout = 60
 
 
 local function mysplit(inputstr, sep)
@@ -25,14 +26,13 @@ local function mysplit(inputstr, sep)
     return t
 end
 
-local timer = function(tempo)
+local timer = function(tempo, callback)
     local tempo1 = os.time()
     while true do
-        --local dt = os.difftime(os.time(),tempo1)
         local dt = os.time() - tempo1
         if dt >= tempo then
-            print("Timer executou " .. dt)
-            tempo1 = os.time()
+            callback()
+            break
         end
         coroutine.yield()
     end
@@ -58,6 +58,7 @@ for i,nome in ipairs(nomesSalas) do
     salas[nome].x = 1
     salas[nome].qtdJogadores = 0
     salas[nome].vez=1
+    salas[nome].timer=nil
 end
 
 local function mqttcb(topic, msg)
@@ -92,6 +93,17 @@ local function mqttcb(topic, msg)
                     local msgSend = meuid .. "," .. tmsg[1] .. "," .. tmsg[3] .. ",JOG1"
                     print(msgSend)
                     mqtt_client:publish(topic, msgSend)
+                    sala.timer = coroutine.create(timer)
+                    coroutine.resume(sala.timer, timeout, function ()
+                        sala.matriz = criaMatrizVazia()
+                        sala.x = 1
+                        sala.qtdJogadores = 0
+                        sala.vez=1
+                        sala.timer=nil
+                        local msgSend = meuid .. ",BROADCAST," .. tmsg[3] .. ",RESET"
+                        print(msgSend)
+                        mqtt_client:publish(topic, msgSend)
+                    end)
 
                     -- server_id,OBS,salax,QTDJOG,valor
                     msgSend = meuid .. ",OBS," .. tmsg[3] .. ",QTDJOG,"
@@ -104,6 +116,18 @@ local function mqttcb(topic, msg)
                     local msgSend = meuid .. "," .. tmsg[1] .. "," .. tmsg[3] .. ",JOG2"
                     print(msgSend)
                     mqtt_client:publish(topic, msgSend)
+                    sala.timer = coroutine.create(timer)
+                    coroutine.resume(sala.timer, timeout, function ()
+                        sala.matriz = criaMatrizVazia()
+                        sala.x = 1
+                        sala.qtdJogadores = 0
+                        sala.vez=1
+                        sala.timer=nil
+                        local msgSend = meuid .. ",BROADCAST," .. tmsg[3] .. ",RESET"
+                        print(msgSend)
+                        mqtt_client:publish(topic, msgSend)
+                    end)
+
 
                     -- server_id,OBS,salax,QTDJOG,valor
                     msgSend = meuid .. ",OBS," .. tmsg[3] .. ",QTDJOG,"
@@ -123,6 +147,18 @@ local function mqttcb(topic, msg)
                 local msgSend = meuid .. ",OBS," .. tmsg[3] .. ",MOV,"..sala.x
                 print(msgSend)
                 mqtt_client:publish(topic, msgSend)
+                sala.timer = coroutine.create(timer)
+                    coroutine.resume(sala.timer, timeout, function ()
+                        sala.matriz = criaMatrizVazia()
+                        sala.x = 1
+                        sala.qtdJogadores = 0
+                        sala.vez=1
+                        sala.timer=nil
+                        local msgSend = meuid .. ",BROADCAST," .. tmsg[3] .. ",RESET"
+                        print(msgSend)
+                        mqtt_client:publish(topic, msgSend)
+                    end)
+
 
             elseif tmsg[4] == "OK" then
                 -- node_id,NIL,salax,OK,valor
@@ -134,9 +170,26 @@ local function mqttcb(topic, msg)
                 local msgSend = meuid .. ",OBS," .. tmsg[3] .. ",OK,"..sala.x
                 print(msgSend)
                 mqtt_client:publish(topic, msgSend)
+                local tempo
+                if sala.matriz:verifica() ~= 0 then
+                  tempo = 10
+                else
+                  tempo = timeout
+                end
                 
+                sala.timer = coroutine.create(timer)
+                coroutine.resume(sala.timer, tempo, function ()
+                    sala.matriz = criaMatrizVazia()
+                    sala.x = 1
+                    sala.qtdJogadores = 0
+                    sala.vez=1
+                    sala.timer=nil
+                    local msgSend = meuid .. ",BROADCAST," .. tmsg[3] .. ",RESET"
+                    print(msgSend)
+                    mqtt_client:publish(topic, msgSend)
+                end)
+
                 
-                print(sala.matriz or "nil")
                 print(sala.matriz.toString())
             elseif tmsg[4] == "GET" then
                 -- love_id,BROADCAST,salax,GET
@@ -177,8 +230,17 @@ mqtt_client:subscribe({ topic })
 
 print("Inscrito")
 
-coroutine.resume(coTimer, 1)
+coroutine.resume(coTimer, 4, function()
+    print("A")
+  end)
+
+coroutine.resume(coTimer)
+
 while true do
     mqtt_client:handler()
-    -- coroutine.resume(coTimer)
+    for nome,sala in pairs(salas) do
+      if sala.timer ~= nil then
+        coroutine.resume(sala.timer)
+      end
+    end
 end
