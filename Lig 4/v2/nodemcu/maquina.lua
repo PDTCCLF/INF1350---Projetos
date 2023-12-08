@@ -152,6 +152,8 @@ local function criaMaquina(consts)
                         print("VOCE VENCEU!")
                         gpio.write(led1, gpio.HIGH);
                         gpio.write(led2, gpio.HIGH);
+                        local win = {{233,200}, {294,200}, {349,200}, {440,200}, {587,200}, {932,500}, {932,200}, {932,200}, {932,200}, {1047,1000}}
+                        beep(win)
                         consts.estado = "final"
                     end
                 else
@@ -183,15 +185,16 @@ local function criaMaquina(consts)
                     consts.x = tonumber(tmsg[5])
                     matriz.dropPiece(2, consts.x)
                     matriz.imprime()
-                    gpio.write(led1, gpio.LOW);
-                    gpio.write(led2, gpio.HIGH);
+                    gpio.write(led1, gpio.LOW)
+                    gpio.write(led2, gpio.HIGH)
                     consts.estado = "jogo1"
 
                     -- local verifica = dofile("verifica.lua")
                     if matriz.verifica() == 2 then
                         print("VOCE PERDEU!")
-                        gpio.write(led1, gpio.HIGH);
-                        gpio.write(led2, gpio.HIGH);
+                        gpio.write(led1, gpio.HIGH)
+                        gpio.write(led2, gpio.HIGH)
+                        beep({{392,250},{262,500}})
                         consts.estado = "final"
                     end
                 end
