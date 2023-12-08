@@ -1,4 +1,5 @@
 local matriz = {}
+local beep = dofile("beep.lua")
 for i = 1, 6 do
   matriz[i] = {}
   for j = 1, 7 do
@@ -19,18 +20,27 @@ function matriz.imprime()
 end
 
 function matriz.dropPiece(peca, x)
+  local dt = 160
+  local notas = {}
+  notas[2] = { 1000, 200 }
   if matriz[6][x] ~= 0 then
     return false
   elseif matriz[1][x] == 0 then
     matriz[1][x] = peca
+    dt = dt * 6
+    notas[1] = { 1, dt }
+    beep(notas)
     return true
   end
   for i = 5, 1, -1 do
     if matriz[i][x] ~= 0 then
       matriz[i + 1][x] = peca
+      dt = dt * (6-i)
       break
     end
   end
+  notas[1] = { 1, dt }
+  beep(notas)
   return true
 end
 

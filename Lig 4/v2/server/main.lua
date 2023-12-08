@@ -51,7 +51,7 @@ print(matriz.toString())
 
 -- matriz.imprime()
 
-local nomesSalas = {"a","b","c","d","e"}
+local nomesSalas = {"abc","cba","fca","gda","efe"}
 
 local salas = {}
 
