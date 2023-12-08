@@ -5,8 +5,9 @@ local function criaMaquina(consts)
     local meuid = consts.meuid
     local tabela_salas = {}
     consts.ind_sala = 1
+    local maquina
 
-    local maquina = {
+    maquina = {
         listando = {
             message = function(topic, msg)
                 local tmsg = mysplit(msg, ",")
@@ -19,7 +20,7 @@ local function criaMaquina(consts)
                     consts.estado = "carregando"
                     -- love_id,BROADCAST,salax,GET
                     local sala = tabela_salas[consts.ind_sala]
-                    consts.botao:setTexto("Carregando " .. sala)
+                    consts.botao:setTexto(sala.."...")
                     local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                     consts.client:publish(topic, msgSend)
                 end
@@ -64,7 +65,7 @@ local function criaMaquina(consts)
                 consts.desenha = false
                 -- love_id,BROADCAST,salax,GET
                 local sala = tabela_salas[consts.ind_sala]
-                consts.botao:setTexto("Carregando " .. sala)
+                consts.botao:setTexto(sala.."...")
                 local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                 consts.client:publish(topic, msgSend)
             end,
@@ -79,7 +80,7 @@ local function criaMaquina(consts)
                 consts.desenha = false
                 -- love_id,BROADCAST,salax,GET
                 local sala = tabela_salas[consts.ind_sala]
-                consts.botao:setTexto("Carregando " .. sala)
+                consts.botao:setTexto(sala.."...")
                 local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                 consts.client:publish(topic, msgSend)
             end
@@ -113,7 +114,7 @@ local function criaMaquina(consts)
 
             botaoDir = function()
                 consts.estado = "carregando"
-                local f = maquina[consts.estado]["botaoEsq"]
+                local f = maquina[consts.estado]["botaoDir"]
                 f()
             end
         },

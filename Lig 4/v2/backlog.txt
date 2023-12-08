@@ -3,14 +3,14 @@
 #Sons do buzzer
 #sons de sala
 #Espectador LÖVE
+#Atualizar visualização do LÖVE
+#Sons de vitória e derrota
 
 
 
-Atualizar visualização do LÖVE
 Verificar inatividade no servidor
 Colocar try-catch
 Liberar sala após o fim de jogo
-Sons de vitória e derrota
 Atualizar feedback visual (leds) do nodemcu
 Relatório
 Apresentação

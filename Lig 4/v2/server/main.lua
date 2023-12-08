@@ -47,11 +47,8 @@ print("broker=" .. (broker or "nil"))
 criaMatrizVazia = dofile("matriz.lua")
 
 local matriz = criaMatrizVazia()
-print(matriz.toString())
 
--- matriz.imprime()
-
-local nomesSalas = {"abc","cba","fca","gda","efe"}
+local nomesSalas = {"a","ab","abc","abcd","g","gf","gfe","gfed"}
 
 local salas = {}
 
@@ -61,10 +58,7 @@ for i,nome in ipairs(nomesSalas) do
     salas[nome].x = 1
     salas[nome].qtdJogadores = 0
     salas[nome].vez=1
-    print(nome)
 end
-
-
 
 local function mqttcb(topic, msg)
     local tmsg = mysplit(msg, ",")
