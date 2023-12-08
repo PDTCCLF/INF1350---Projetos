@@ -5,12 +5,11 @@
 #Espectador LÖVE
 #Atualizar visualização do LÖVE
 #Sons de vitória e derrota
+#Atualizar feedback visual (leds) do nodemcu
+#Verificar inatividade no servidor
 
 
-
-Verificar inatividade no servidor
-Colocar try-catch
 Liberar sala após o fim de jogo
-Atualizar feedback visual (leds) do nodemcu
+Colocar try-catch
 Relatório
 Apresentação

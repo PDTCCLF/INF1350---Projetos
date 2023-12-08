@@ -109,15 +109,17 @@ local function criaMaquina(consts)
                     if tmsg[4] == "JOG1" then
                         -- server_id,node_id,salax,JOG1
                         consts.sala = tmsg[3]
-                        consts.estado = "jogo1"
-                        gpio.write(led1, gpio.LOW);
-                        gpio.write(led2, gpio.HIGH);
+                        consts.estado = "jogo2"
+                        gpio.write(led1, gpio.HIGH);
+                        gpio.write(led2, gpio.LOW);
                     elseif tmsg[4] == "JOG2" then
                         -- server_id,node_id,salax,JOG2
                         consts.sala = tmsg[3]
                         consts.estado = "jogo2"
                         gpio.write(led1, gpio.HIGH);
                         gpio.write(led2, gpio.LOW);
+                        msg = meuid .. ",BROADCAST," .. consts.sala .. ",OK,0"
+                        consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
                     elseif tmsg[4] == "NEG" then
                         -- server_id,node_id,salax,NEG
                         consts.estado = "espera"
@@ -185,9 +187,13 @@ local function criaMaquina(consts)
                     return
                 elseif tmsg[2] == "BROADCAST" and tmsg[3] == consts.sala and tmsg[4] == "OK" then
                     -- node_id,BROADCAST,salax,OK,valor
-                    print(message)
                     consts.x = tonumber(tmsg[5])
-                    matriz.dropPiece(2, consts.x)
+                    print(message)
+                    if consts.x == 0 then
+                        consts.x = 1
+                    else
+                        matriz.dropPiece(2, consts.x)
+                    end
                     matriz.imprime()
                     gpio.write(led1, gpio.LOW)
                     gpio.write(led2, gpio.HIGH)

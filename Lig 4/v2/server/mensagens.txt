@@ -27,3 +27,4 @@ server_id,love_id,salax,MATRIZ,0102...,valor
 server_id,OBS,salax,QTDJOG,valor
 server_id,OBS,salax,MOV,valor
 server_id,OBS,salax,OK,valor
+server_id,BROADCAST,salax,RESET
