@@ -7,9 +7,8 @@
 #Sons de vitória e derrota
 #Atualizar feedback visual (leds) do nodemcu
 #Verificar inatividade no servidor
+#Liberar sala após o fim de jogo
 
 
-Liberar sala após o fim de jogo
-Colocar try-catch
 Relatório
 Apresentação

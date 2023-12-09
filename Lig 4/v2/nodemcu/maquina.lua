@@ -3,9 +3,21 @@ local function criaMaquina(consts)
     local led1 = consts.led1
     local led2 = consts.led2
     local mysplit = consts.mysplit
-    local matriz = consts.matriz
     local topic = consts.topic
     local meuid = consts.meuid
+    local matriz
+    local salas
+    local maquina
+    local function reset()
+        print("RESET")
+        matriz = dofile("matriz.lc")
+        gpio.write(led1, gpio.LOW);
+        gpio.write(led2, gpio.LOW);
+        consts.estado = "espera"
+        -- node_id,BROADCAST,NIL
+        local msg = meuid .. ",BROADCAST,NIL"
+        consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
+    end
 
     maquina = {
         inicio = {
@@ -30,11 +42,7 @@ local function criaMaquina(consts)
             subscribe = function(client)
                 print("Conectado")
                 print("Inscrito")
-                gpio.write(led1, gpio.LOW);
-                gpio.write(led2, gpio.LOW);
-                consts.estado = "espera"
-                local msg = meuid .. ",BROADCAST,NIL"
-                consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
+                reset()
             end,
             confail = function(client)
                 gpio.write(led1, gpio.HIGH);
@@ -48,7 +56,6 @@ local function criaMaquina(consts)
                 consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
             end,
             message = function(client, topic, message)
-                --print("Mensagem '" .. message .. "' recebida")
                 local tmsg = mysplit(message, ",")
                 if tmsg[1] == meuid then
                     return
@@ -144,23 +151,23 @@ local function criaMaquina(consts)
                 consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
             end,
             botao4 = function(l, t)
-                gpio.write(led1, gpio.HIGH);
-                gpio.write(led2, gpio.LOW);
                 if matriz.dropPiece(1, consts.x) then
                     print("OK")
                     matriz.imprime()
-
+                    
+                    -- node_id,BROADCAST,salax,OK,valor
                     msg = meuid .. ",BROADCAST," .. consts.sala .. ",OK," .. consts.x
                     consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
+                    gpio.write(led1, gpio.HIGH);
+                    gpio.write(led2, gpio.LOW);
                     consts.estado = "jogo2"
-                    -- local verifica = dofile("verifica.lua")
+
                     if matriz.verifica() == 1 then
                         print("VOCE VENCEU!")
                         gpio.write(led1, gpio.HIGH);
                         gpio.write(led2, gpio.HIGH);
-                        local win = {{233,200}, {294,200}, {349,200}, {440,200}, {587,200}, {932,500}, {932,200}, {932,200}, {932,200}, {1047,1000}}
+                        local win = { { 233, 200 }, { 294, 200 }, { 349, 200 }, { 440, 200 }, { 587, 200 }, { 932, 500 }, { 932, 200 }, { 932, 200 }, { 932, 200 }, { 1047, 1000 } }
                         beep(win)
-                        consts.estado = "final"
                     end
                 else
                     print("Jogada invalida")
@@ -168,15 +175,11 @@ local function criaMaquina(consts)
             end,
             message = function(client, topic, message)
                 tmsg = mysplit(message, ",")
-                if tmsg[1] == meuid then
-                    return
-                    -- elseif tmsg[2] == "SUB" then
-                    --   msg = meuid .. ",JOG"
-                    --   consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
-                    -- elseif tmsg[2] == "JOG" then
-                    --   gpio.write(led1, gpio.HIGH);
-                    --   gpio.write(led2, gpio.LOW);
-                    --   consts.estado = "jogo2"
+                if tmsg[1] == meuid then return end
+
+                if tmsg[2] == "BROADCAST" and tmsg[3] == consts.sala and tmsg[4] == "RESET" then
+                    -- server_id,BROADCAST,salax,RESET
+                    reset()
                 end
             end
         },
@@ -185,27 +188,31 @@ local function criaMaquina(consts)
                 tmsg = mysplit(message, ",")
                 if tmsg[1] == meuid then
                     return
-                elseif tmsg[2] == "BROADCAST" and tmsg[3] == consts.sala and tmsg[4] == "OK" then
-                    -- node_id,BROADCAST,salax,OK,valor
-                    consts.x = tonumber(tmsg[5])
-                    print(message)
-                    if consts.x == 0 then
-                        consts.x = 1
-                    else
-                        matriz.dropPiece(2, consts.x)
-                    end
-                    matriz.imprime()
-                    gpio.write(led1, gpio.LOW)
-                    gpio.write(led2, gpio.HIGH)
-                    consts.estado = "jogo1"
-
-                    -- local verifica = dofile("verifica.lua")
-                    if matriz.verifica() == 2 then
-                        print("VOCE PERDEU!")
-                        gpio.write(led1, gpio.HIGH)
+                elseif tmsg[2] == "BROADCAST" and tmsg[3] == consts.sala then
+                    if tmsg[4] == "OK" then
+                        -- node_id,BROADCAST,salax,OK,valor
+                        consts.x = tonumber(tmsg[5])
+                        print(message)
+                        if consts.x == 0 then
+                            consts.x = 1
+                        else
+                            matriz.dropPiece(2, consts.x)
+                        end
+                        matriz.imprime()
+                        gpio.write(led1, gpio.LOW)
                         gpio.write(led2, gpio.HIGH)
-                        beep({{392,250},{262,500}})
-                        consts.estado = "final"
+                        consts.estado = "jogo1"
+
+                        if matriz.verifica() == 2 then
+                            print("VOCE PERDEU!")
+                            gpio.write(led1, gpio.HIGH)
+                            gpio.write(led2, gpio.HIGH)
+                            beep({ { 392, 250 }, { 262, 500 } })
+                            consts.estado = "jogo2"
+                        end
+                    elseif tmsg[4] == "RESET" then
+                        -- server_id,BROADCAST,salax,RESET
+                        reset()
                     end
                 end
             end

@@ -85,6 +85,11 @@ function love.load()
     botaoEsq:setTexto("<--")
     botaoDir:setTexto("-->")
 
+    botao:setCallback(function ()
+        local msgSend = meuid .. ",BROADCAST,NIL,ALL"
+        mqtt_client:publish(topic, msgSend)
+    end)
+
     botaoEsq:setCallback(function()
         local f = maquina[constsMaq.estado] and maquina[constsMaq.estado]["botaoEsq"]
         if f ~= nil then

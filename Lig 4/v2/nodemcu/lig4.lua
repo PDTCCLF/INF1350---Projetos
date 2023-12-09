@@ -31,12 +31,10 @@ end
 
 local config = dofile("config.lua")
 print("meuid: "..config.meuid)
-local matriz = dofile("matriz.lc")
 
 local consts = {
   led1 = led1,
   led2 = led2,
-  matriz = matriz,
   estado = "inicio",
   x = 1,
   mysplit = mysplit,

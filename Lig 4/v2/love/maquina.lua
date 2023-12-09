@@ -18,9 +18,10 @@ local function criaMaquina(consts)
                     tabela_salas = mysplit(tmsg[3], ";")
 
                     consts.estado = "carregando"
+                    consts.desenha = false
                     -- love_id,BROADCAST,salax,GET
                     local sala = tabela_salas[consts.ind_sala]
-                    consts.botao:setTexto(sala.."...")
+                    consts.botao:setTexto(sala .. "...")
                     local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                     consts.client:publish(topic, msgSend)
                 end
@@ -65,7 +66,7 @@ local function criaMaquina(consts)
                 consts.desenha = false
                 -- love_id,BROADCAST,salax,GET
                 local sala = tabela_salas[consts.ind_sala]
-                consts.botao:setTexto(sala.."...")
+                consts.botao:setTexto(sala .. "...")
                 local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                 consts.client:publish(topic, msgSend)
             end,
@@ -80,7 +81,7 @@ local function criaMaquina(consts)
                 consts.desenha = false
                 -- love_id,BROADCAST,salax,GET
                 local sala = tabela_salas[consts.ind_sala]
-                consts.botao:setTexto(sala.."...")
+                consts.botao:setTexto(sala .. "...")
                 local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
                 consts.client:publish(topic, msgSend)
             end
@@ -100,8 +101,23 @@ local function criaMaquina(consts)
                         consts.map:movPiece(tonumber(tmsg[5]))
                     elseif tmsg[4] == "OK" then
                         -- server_id,OBS,salax,OK,valor
+                        if tonumber(tmsg[5]) == 0 then return end
                         consts.map:movPiece(tonumber(tmsg[5]))
                         consts.map:dropPiece()
+                    end
+                elseif tmsg[2] == "BROADCAST" then
+                    local sala = tabela_salas[consts.ind_sala]
+                    if sala ~= tmsg[3] then return end
+                    -- server_id,BROADCAST,salax,RESET
+
+
+                    if tmsg[4] == "RESET" then
+                        consts.estado = "carregando"
+                        consts.desenha = false
+                        -- love_id,BROADCAST,salax,GET
+                        consts.botao:setTexto(sala .. "...")
+                        local msgSend = meuid .. ",BROADCAST," .. sala .. ",GET"
+                        consts.client:publish(topic, msgSend)
                     end
                 end
             end,
