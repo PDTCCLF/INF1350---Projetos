@@ -129,7 +129,7 @@ local function criaMaquina(consts)
                         consts.m:publish(topic, msg, 0, 0, function(client) print(msg) end)
                     elseif tmsg[4] == "NEG" then
                         -- server_id,node_id,salax,NEG
-                        consts.estado = "espera"
+                        reset()
                     end
                     print("Mensagem '" .. message .. "' recebida")
                 end
