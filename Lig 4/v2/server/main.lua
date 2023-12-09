@@ -141,6 +141,7 @@ local function mqttcb(topic, msg)
                 end
             elseif tmsg[4] == "MOV" then
                 -- node_id,NIL,salax,MOV,valor
+                if tonumber(tmsg[5]) == 0 then return end
                 sala.x = tonumber(tmsg[5])
 
                 -- server_id,OBS,salax,MOV,valor
@@ -162,6 +163,7 @@ local function mqttcb(topic, msg)
 
             elseif tmsg[4] == "OK" then
                 -- node_id,NIL,salax,OK,valor
+                if tonumber(tmsg[5]) == 0 then return end
                 sala.x = tonumber(tmsg[5])
                 sala.matriz.dropPiece(sala.vez, sala.x)
                 sala.vez = (sala.vez % 2)+1 
